@@ -3,9 +3,13 @@ const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } = require('disc
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('setup-pravila')
-        .setDescription('Postavlja panel sa pravilima LSPD-a u trenutni kanal.')
-        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+        .setDescription('Postavlja panel sa pravilima LSPD-a u trenutni kanal.'),
     async execute(interaction) {
+        const hasRole = interaction.member.roles.cache.some(role => ['director', 'zamenik nacelnika'].includes(role.name.toLowerCase()));
+        const isAdmin = interaction.member.permissions.has(PermissionFlagsBits.Administrator);
+        if (!hasRole && !isAdmin) {
+            return interaction.reply({ content: '❌ Samo Načelnici i Administratori mogu koristiti ovu komandu!', ephemeral: true });
+        }
         const embed = new EmbedBuilder()
             .setColor('#1a5276') 
             .setTitle('LSPD - Zvanični Pravilnik i Propisi')

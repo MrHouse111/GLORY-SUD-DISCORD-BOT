@@ -3,9 +3,13 @@ const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, Butt
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('setup-licne-karte')
-        .setDescription('Postavlja panel za kreiranje ličnih karata')
-        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+        .setDescription('Postavlja panel za kreiranje ličnih karata'),
     async execute(interaction) {
+        const hasRole = interaction.member.roles.cache.some(role => ['director', 'zamenik nacelnika'].includes(role.name.toLowerCase()));
+        const isAdmin = interaction.member.permissions.has(PermissionFlagsBits.Administrator);
+        if (!hasRole && !isAdmin) {
+            return interaction.reply({ content: '❌ Samo Načelnici i Administratori mogu koristiti ovu komandu!', ephemeral: true });
+        }
         const embed = new EmbedBuilder()
             .setColor('#0099ff')
             .setTitle('👮 LSPD Lične Karte')

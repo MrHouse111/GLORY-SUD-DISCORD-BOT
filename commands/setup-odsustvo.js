@@ -3,9 +3,13 @@ const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, Butt
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('setup-odsustvo')
-        .setDescription('Postavlja panel za prijavu odsustva u trenutni kanal.')
-        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+        .setDescription('Postavlja panel za prijavu odsustva u trenutni kanal.'),
     async execute(interaction) {
+        const hasRole = interaction.member.roles.cache.some(role => ['director', 'zamenik nacelnika'].includes(role.name.toLowerCase()));
+        const isAdmin = interaction.member.permissions.has(PermissionFlagsBits.Administrator);
+        if (!hasRole && !isAdmin) {
+            return interaction.reply({ content: '❌ Samo Načelnici i Administratori mogu koristiti ovu komandu!', ephemeral: true });
+        }
         const embed = new EmbedBuilder()
             .setColor('#f1c40f')
             .setTitle('LSPD - Prijava Odsustva')
