@@ -5,6 +5,7 @@ module.exports = {
 		.setName('postavi-duznost')
 		.setDescription('Postavlja panel za prijavu/odjavu sa dužnosti'),
 	async execute(interaction) {
+        if (!interaction.member) return interaction.reply({ content: '❌ Ove komande se mogu koristiti isključivo na serveru, a ne u privatnim porukama!', ephemeral: true });
 		const hasRole = interaction.member.roles.cache.some(role => ['director', 'zamenik nacelnika'].includes(role.name.toLowerCase()));
 		const isAdmin = interaction.member.permissions.has(PermissionFlagsBits.Administrator);
 		if (!hasRole && !isAdmin) {
