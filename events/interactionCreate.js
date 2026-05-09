@@ -33,6 +33,12 @@ module.exports = {
                     } else {
                         const durationMs = await dutyStore.checkOut(user.id);
                         const safeDuration = durationMs || 0;
+                        
+                        // NOVO: Sačuvaj duty vreme u stats bazu
+                        if (safeDuration > 0) {
+                            await statsStore.addDutyTime(user.id, user.username, safeDuration);
+                        }
+
                         const durationMinutes = Math.floor(safeDuration / 60000);
                         const hours = Math.floor(durationMinutes / 60);
                         const minutes = durationMinutes % 60;

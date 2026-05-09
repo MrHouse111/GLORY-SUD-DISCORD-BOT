@@ -34,10 +34,10 @@ module.exports = {
 
             let messageCount = 0;
             let voiceMs = 0;
+            let dutyMs = 0;
             const userStats = allStats[member.user.id];
 
             if (userStats) {
-                // Novi način: userStats.messages je objekat
                 if (userStats.messages && typeof userStats.messages === 'object') {
                     for (const [dateStr, count] of Object.entries(userStats.messages)) {
                         if (new Date(dateStr) >= sevenDaysAgo) {
@@ -46,7 +46,6 @@ module.exports = {
                     }
                 }
                 
-                // Novi način: userStats.voice je objekat
                 if (userStats.voice && typeof userStats.voice === 'object') {
                     for (const [dateStr, durationMs] of Object.entries(userStats.voice)) {
                         if (new Date(dateStr) >= sevenDaysAgo) {
@@ -55,7 +54,14 @@ module.exports = {
                     }
                 }
 
-                // Stari način: literalni ključevi "messages.YYYY-MM-DD" u root-u
+                if (userStats.duty && typeof userStats.duty === 'object') {
+                    for (const [dateStr, durationMs] of Object.entries(userStats.duty)) {
+                        if (new Date(dateStr) >= sevenDaysAgo) {
+                            dutyMs += durationMs;
+                        }
+                    }
+                }
+
                 for (const [key, value] of Object.entries(userStats)) {
                     if (key.startsWith('messages.')) {
                         const dateStr = key.substring(9);
@@ -67,16 +73,20 @@ module.exports = {
                         if (new Date(dateStr) >= sevenDaysAgo) {
                             voiceMs += value;
                         }
+                    } else if (key.startsWith('duty.')) {
+                        const dateStr = key.substring(5);
+                        if (new Date(dateStr) >= sevenDaysAgo) {
+                            dutyMs += value;
+                        }
                     }
                 }
             }
 
-            if (messageCount === 0 && voiceMs === 0) {
+            if (messageCount === 0 && voiceMs === 0 && dutyMs === 0) {
                 inactive.push(member);
             }
         });
 
-        // Podeli na stranice po max 20 članova (Discord embed limit)
         const embeds = [];
         const pageSize = 20;
         const totalPages = Math.ceil(inactive.length / pageSize) || 1;
@@ -97,7 +107,7 @@ module.exports = {
             if (page === 0) {
                 embed.addFields({
                     name: 'ℹ️ Napomena',
-                    value: 'Ovi članovi imaju **0 poruka** i **0 minuta** u voice kanalima u poslednjih 7 dana.',
+                    value: 'Ovi članovi imaju **0 minuta dužnosti**, **0 poruka** i **0 minuta** u voice kanalima u poslednjih 7 dana.',
                     inline: false
                 });
             }
@@ -105,7 +115,6 @@ module.exports = {
             embeds.push(embed);
         }
 
-        // Discord dozvoljava max 10 embeda po poruci
         const maxEmbeds = Math.min(embeds.length, 10);
         await interaction.editReply({ embeds: embeds.slice(0, maxEmbeds) });
     },

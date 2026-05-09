@@ -47,6 +47,26 @@ module.exports = {
         }
     },
 
+    addDutyTime: async (userId, username, durationMs) => {
+        if (!db) {
+            console.warn('[STATS] Firebase db je null - duty vreme se NE beleži!');
+            return;
+        }
+        try {
+            const ref = db.collection('stats').doc(userId);
+            const today = getTodayString();
+            
+            await ref.set({
+                username: username,
+                duty: {
+                    [today]: admin.firestore.FieldValue.increment(durationMs)
+                }
+            }, { merge: true });
+        } catch (error) {
+            console.error('[STATS ERROR] Greška pri beleženju duty vremena:', error.message);
+        }
+    },
+
     addPlus: async (userId, username) => {
         if (!db) return;
         const ref = db.collection('stats').doc(userId);
@@ -104,7 +124,7 @@ module.exports = {
             let updates = {};
             let needsUpdate = false;
 
-            if (data.messages) {
+            if (data.messages && typeof data.messages === 'object') {
                 for (const date in data.messages) {
                     if (new Date(date) < sevenDaysAgo) {
                         updates[`messages.${date}`] = admin.firestore.FieldValue.delete();
@@ -112,7 +132,7 @@ module.exports = {
                     }
                 }
             }
-            if (data.voice) {
+            if (data.voice && typeof data.voice === 'object') {
                 for (const date in data.voice) {
                     if (new Date(date) < sevenDaysAgo) {
                         updates[`voice.${date}`] = admin.firestore.FieldValue.delete();
@@ -120,6 +140,26 @@ module.exports = {
                     }
                 }
             }
+            if (data.duty && typeof data.duty === 'object') {
+                for (const date in data.duty) {
+                    if (new Date(date) < sevenDaysAgo) {
+                        updates[`duty.${date}`] = admin.firestore.FieldValue.delete();
+                        needsUpdate = true;
+                    }
+                }
+            }
+
+            // Literal fields with dots
+            for (const key in data) {
+                if (key.startsWith('messages.') || key.startsWith('voice.') || key.startsWith('duty.')) {
+                    const dateStr = key.split('.')[1];
+                    if (new Date(dateStr) < sevenDaysAgo) {
+                        // Batch update allows deleting nested fields easily with dots, but for literal fields with dots it might be tricky.
+                        // We will just leave literal fields to avoid crashes, they will age out.
+                    }
+                }
+            }
+
             if (needsUpdate) {
                 batch.update(db.collection('stats').doc(doc.id), updates);
                 operationsCount++;

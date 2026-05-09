@@ -49,10 +49,11 @@ module.exports = {
 
             let messageCount = 0;
             let voiceMs = 0;
+            let dutyMs = 0;
             const userStats = allStats[member.user.id];
 
             if (userStats) {
-                // Novi način: userStats.messages je objekat
+                // Novi način: objekti
                 if (userStats.messages && typeof userStats.messages === 'object') {
                     for (const [dateStr, count] of Object.entries(userStats.messages)) {
                         const msgDate = new Date(dateStr);
@@ -62,7 +63,6 @@ module.exports = {
                     }
                 }
                 
-                // Novi način: userStats.voice je objekat
                 if (userStats.voice && typeof userStats.voice === 'object') {
                     for (const [dateStr, durationMs] of Object.entries(userStats.voice)) {
                         const msgDate = new Date(dateStr);
@@ -72,7 +72,16 @@ module.exports = {
                     }
                 }
 
-                // Stari način: literalni ključevi "messages.YYYY-MM-DD" u root-u
+                if (userStats.duty && typeof userStats.duty === 'object') {
+                    for (const [dateStr, durationMs] of Object.entries(userStats.duty)) {
+                        const msgDate = new Date(dateStr);
+                        if (msgDate >= sevenDaysAgo) {
+                            dutyMs += durationMs;
+                        }
+                    }
+                }
+
+                // Stari način: literalni ključevi
                 for (const [key, value] of Object.entries(userStats)) {
                     if (key.startsWith('messages.')) {
                         const dateStr = key.substring(9);
@@ -86,14 +95,27 @@ module.exports = {
                         if (msgDate >= sevenDaysAgo) {
                             voiceMs += value;
                         }
+                    } else if (key.startsWith('duty.')) {
+                        const dateStr = key.substring(5);
+                        const msgDate = new Date(dateStr);
+                        if (msgDate >= sevenDaysAgo) {
+                            dutyMs += value;
+                        }
                     }
                 }
             }
             
+            // Formatiranje voice
             const voiceMinutes = Math.floor(voiceMs / 60000);
             const voiceHours = Math.floor(voiceMinutes / 60);
             const voiceMinsRemainder = voiceMinutes % 60;
             const voiceString = `${voiceHours}h ${voiceMinsRemainder}m`;
+
+            // Formatiranje dužnosti
+            const dutyMinutes = Math.floor(dutyMs / 60000);
+            const dutyHours = Math.floor(dutyMinutes / 60);
+            const dutyMinsRemainder = dutyMinutes % 60;
+            const dutyString = `${dutyHours}h ${dutyMinsRemainder}m`;
 
             userActivity.push({
                 id: member.user.id,
@@ -102,19 +124,45 @@ module.exports = {
                 messageCount: messageCount,
                 voiceMs: voiceMs,
                 voiceString: voiceString,
+                dutyMs: dutyMs,
+                dutyString: dutyString,
                 pluses: userStats ? (userStats.pluses || 0) : 0,
                 minuses: userStats ? (userStats.minuses || 0) : 0
             });
         });
 
-        userActivity.sort((a, b) => b.messageCount - a.messageCount);
+        // NOVO SORTIRANJE
+        // 1. Vreme na dužnosti (dutyMs)
+        // 2. Plusevi minus Minusi (ako je vreme na dužnosti isto)
+        // 3. Poruke (ako su i poeni isti)
+        userActivity.sort((a, b) => {
+            if (b.dutyMs !== a.dutyMs) {
+                return b.dutyMs - a.dutyMs;
+            }
+            const aPoints = a.pluses - a.minuses;
+            const bPoints = b.pluses - b.minuses;
+            if (bPoints !== aPoints) {
+                return bPoints - aPoints;
+            }
+            return b.messageCount - a.messageCount;
+        });
 
         const topActive = userActivity.slice(0, 10);
-        const leastActive = userActivity.filter(u => u.messageCount > 0 || u.voiceMs > 0).reverse().slice(0, 10);
-        const inactive = userActivity.filter(u => u.messageCount === 0 && u.voiceMs === 0);
+        
+        // Najmanje aktivni su oni koji imaju neku aktivnost (makar poruku ili dužnost), ali su na dnu liste
+        const activeUsers = userActivity.filter(u => u.dutyMs > 0 || u.messageCount > 0 || u.voiceMs > 0);
+        const leastActive = activeUsers.reverse().slice(0, 10);
+        
+        const inactive = userActivity.filter(u => u.dutyMs === 0 && u.messageCount === 0 && u.voiceMs === 0);
 
-        let topText = topActive.map((u, i) => `${i + 1}. <@${u.id}> - ${u.messageCount} poruka | 🎙️ ${u.voiceString} (Plus: ${u.pluses}, Minus: ${u.minuses})`).join('\n') || 'Nema podataka';
-        let leastText = leastActive.map((u, i) => `${i + 1}. <@${u.id}> - ${u.messageCount} poruka | 🎙️ ${u.voiceString}`).join('\n') || 'Nema podataka';
+        const formatMember = (u, i) => {
+            const points = u.pluses - u.minuses;
+            const pointsStr = points > 0 ? `+${points}` : points;
+            return `**${i + 1}.** <@${u.id}>\n⏱️ **Dužnost:** \`${u.dutyString}\` | ⚖️ **Ocena:** \`${pointsStr}\` (➕${u.pluses} ➖${u.minuses})\n💬 **Poruke:** \`${u.messageCount}\` | 🎙️ **Voice:** \`${u.voiceString}\``;
+        };
+
+        let topText = topActive.map(formatMember).join('\n\n') || 'Nema podataka';
+        let leastText = leastActive.map(formatMember).join('\n\n') || 'Nema podataka';
 
         // Dijagnostička informacija
         const diagText = `🔧 Firebase: ${firebaseConnected ? '✅ Povezan' : '❌ Nije povezan'} | Zapisi u bazi: **${statsKeys.length}** | Članova na serveru: **${userActivity.length}**`;
@@ -124,7 +172,7 @@ module.exports = {
             .setTitle('📊 LSPD Nedeljni Izveštaj Aktivnosti (Poslednjih 7 dana)')
             .addFields(
                 { name: '🏆 Najaktivniji', value: topText, inline: false },
-                { name: '⚠️ Najmanje aktivni (a da su pisali)', value: leastText, inline: false },
+                { name: '⚠️ Najmanje aktivni', value: leastText, inline: false },
                 { name: `👻 Potpuno neaktivni (${inactive.length} članova)`, value: 'Za kompletnu listu neaktivnih koristite komandu `/neaktivni`', inline: false },
                 { name: '🔧 Dijagnostika', value: diagText, inline: false }
             )
