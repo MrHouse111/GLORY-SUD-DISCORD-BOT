@@ -14,15 +14,15 @@ module.exports = {
             // Duty System
             if (customId === 'duty_on' || customId === 'duty_off') {
                 try {
-                    await interaction.deferReply();
+                    await interaction.deferUpdate();
                     const isDutyOn = customId === 'duty_on';
                     const onDuty = await dutyStore.isOnDuty(user.id);
 
                     if (isDutyOn && onDuty) {
-                        return interaction.editReply({ content: 'Već ste na dužnosti!' });
+                        return interaction.followUp({ content: 'Već ste na dužnosti!', ephemeral: true });
                     }
                     if (!isDutyOn && !onDuty) {
-                        return interaction.editReply({ content: 'Niste prijavljeni na dužnost!' });
+                        return interaction.followUp({ content: 'Niste prijavljeni na dužnost!', ephemeral: true });
                     }
 
                     let embed;
@@ -49,9 +49,6 @@ module.exports = {
                             .setDescription(`🔴 **${interaction.member.displayName}** je odjavio/la dužnost u **${timeString}**.\n\n⏱️ Vreme provedeno na dužnosti: **${hours}h ${minutes}m**.`);
                     }
 
-                    // Pošalji log embed na kanal
-                    await interaction.editReply({ embeds: [embed] });
-
                     // Brisanje stare poruke (gde se nalazilo dugme)
                     try {
                         await interaction.message.delete();
@@ -59,7 +56,7 @@ module.exports = {
                         // Ignoriši ako je poruka već obrisana
                     }
 
-                    // Generisanje i slanje novog panela na dno kanala
+                    // Generisanje i slanje novog panela
                     const { ButtonBuilder, ButtonStyle } = require('discord.js');
                     const row = new ActionRowBuilder()
                         .addComponents(
@@ -79,12 +76,16 @@ module.exports = {
                         .setDescription('Kliknite na dugme ispod da biste se prijavili ili odjavili sa dužnosti.\n\nSistem automatski beleži vaše vreme i aktivnost.')
                         .setTimestamp();
 
+                    // 1. Prvo saljemo panel da bi bio PREDZADNJA poruka
                     await interaction.channel.send({ embeds: [panelEmbed], components: [row] });
+
+                    // 2. Onda saljemo log embed da bi bio ZADNJA poruka
+                    await interaction.followUp({ embeds: [embed] });
                 } catch (error) {
                     console.error('[DUTY ERROR]', error);
                     try {
-                        if (interaction.deferred) {
-                            await interaction.editReply({ content: '⚠️ Došlo je do greške sa sistemom dužnosti. Pokušajte ponovo.' });
+                        if (interaction.deferred || interaction.replied) {
+                            await interaction.followUp({ content: '⚠️ Došlo je do greške sa sistemom dužnosti. Pokušajte ponovo.', ephemeral: true });
                         } else {
                             await interaction.reply({ content: '⚠️ Došlo je do greške sa sistemom dužnosti. Pokušajte ponovo.', ephemeral: true });
                         }
