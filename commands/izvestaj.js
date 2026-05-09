@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } = require('discord.js');
 const statsStore = require('../utils/statsStore');
+const { db } = require('../utils/firebase');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -15,9 +16,21 @@ module.exports = {
 
         await interaction.deferReply(); 
 
+        // Dijagnostika - proveri Firebase konekciju
+        const firebaseConnected = db !== null;
+        console.log(`[IZVESTAJ] Firebase konekcija: ${firebaseConnected ? 'POVEZAN ✅' : 'NIJE POVEZAN ❌'}`);
+
         await statsStore.cleanOldData();
 
         const allStats = await statsStore.getAllStats();
+        const statsKeys = Object.keys(allStats);
+        console.log(`[IZVESTAJ] Broj korisnika u stats kolekciji: ${statsKeys.length}`);
+        if (statsKeys.length > 0) {
+            // Loguj primer prvog korisnika za dijagnostiku
+            const firstKey = statsKeys[0];
+            console.log(`[IZVESTAJ] Primer podataka (${firstKey}):`, JSON.stringify(allStats[firstKey]).substring(0, 200));
+        }
+
         const now = new Date();
         const sevenDaysAgo = new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000));
 
@@ -73,7 +86,7 @@ module.exports = {
             });
         });
 
-        userActivity.sort((a, b) => b.messageCount - a.messageCount); // Možemo sortirati i po aktivnosti, ali ostaćemo na porukama
+        userActivity.sort((a, b) => b.messageCount - a.messageCount);
 
         const topActive = userActivity.slice(0, 10);
         const leastActive = userActivity.filter(u => u.messageCount > 0 || u.voiceMs > 0).reverse().slice(0, 10);
@@ -81,22 +94,9 @@ module.exports = {
 
         let topText = topActive.map((u, i) => `${i + 1}. <@${u.id}> - ${u.messageCount} poruka | 🎙️ ${u.voiceString} (Plus: ${u.pluses}, Minus: ${u.minuses})`).join('\n') || 'Nema podataka';
         let leastText = leastActive.map((u, i) => `${i + 1}. <@${u.id}> - ${u.messageCount} poruka | 🎙️ ${u.voiceString}`).join('\n') || 'Nema podataka';
-        
-        let inactiveText = inactive.map(u => `<@${u.id}>`).join(', ');
-        if (!inactiveText) inactiveText = 'Nema neaktivnih članova.';
-        else if (inactiveText.length > 1024) {
-            // Discord embed polje ima limit od 1024 karaktera
-            // Prikaži koliko stane + ukupan broj
-            let truncated = '';
-            const mentions = inactive.map(u => `<@${u.id}>`);
-            let shown = 0;
-            for (const mention of mentions) {
-                if ((truncated + mention + ', ').length > 950) break;
-                truncated += (shown > 0 ? ', ' : '') + mention;
-                shown++;
-            }
-            inactiveText = truncated + `\n\n... i još **${inactive.length - shown}** neaktivnih članova (ukupno: **${inactive.length}**)`;
-        }
+
+        // Dijagnostička informacija
+        const diagText = `🔧 Firebase: ${firebaseConnected ? '✅ Povezan' : '❌ Nije povezan'} | Zapisi u bazi: **${statsKeys.length}** | Članova na serveru: **${userActivity.length}**`;
 
         const embed = new EmbedBuilder()
             .setColor('#3498db')
@@ -104,7 +104,8 @@ module.exports = {
             .addFields(
                 { name: '🏆 Najaktivniji', value: topText, inline: false },
                 { name: '⚠️ Najmanje aktivni (a da su pisali)', value: leastText, inline: false },
-                { name: '👻 Potpuno neaktivni (0 poruka)', value: inactiveText, inline: false }
+                { name: `👻 Potpuno neaktivni (${inactive.length} članova)`, value: 'Za kompletnu listu neaktivnih koristite komandu `/neaktivni`', inline: false },
+                { name: '🔧 Dijagnostika', value: diagText, inline: false }
             )
             .setTimestamp()
             .setFooter({ text: 'Izveštaj generisan za Načelnika' });

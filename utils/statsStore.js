@@ -8,25 +8,39 @@ function getTodayString() {
 
 module.exports = {
     addMessage: async (userId, username) => {
-        if (!db) return;
-        const ref = db.collection('stats').doc(userId);
-        const today = getTodayString();
-        
-        await ref.set({
-            username: username,
-            [`messages.${today}`]: admin.firestore.FieldValue.increment(1)
-        }, { merge: true });
+        if (!db) {
+            console.warn('[STATS] Firebase db je null - poruke se NE beleže!');
+            return;
+        }
+        try {
+            const ref = db.collection('stats').doc(userId);
+            const today = getTodayString();
+            
+            await ref.set({
+                username: username,
+                [`messages.${today}`]: admin.firestore.FieldValue.increment(1)
+            }, { merge: true });
+        } catch (error) {
+            console.error('[STATS ERROR] Greška pri beleženju poruke:', error.message);
+        }
     },
 
     addVoiceTime: async (userId, username, durationMs) => {
-        if (!db) return;
-        const ref = db.collection('stats').doc(userId);
-        const today = getTodayString();
-        
-        await ref.set({
-            username: username,
-            [`voice.${today}`]: admin.firestore.FieldValue.increment(durationMs)
-        }, { merge: true });
+        if (!db) {
+            console.warn('[STATS] Firebase db je null - voice vreme se NE beleži!');
+            return;
+        }
+        try {
+            const ref = db.collection('stats').doc(userId);
+            const today = getTodayString();
+            
+            await ref.set({
+                username: username,
+                [`voice.${today}`]: admin.firestore.FieldValue.increment(durationMs)
+            }, { merge: true });
+        } catch (error) {
+            console.error('[STATS ERROR] Greška pri beleženju voice vremena:', error.message);
+        }
     },
 
     addPlus: async (userId, username) => {
