@@ -161,21 +161,29 @@ module.exports = {
             return `**${i + 1}.** <@${u.id}>\n⏱️ **Dužnost:** \`${u.dutyString}\` | ⚖️ **Ocena:** \`${pointsStr}\` (➕${u.pluses} ➖${u.minuses})\n💬 **Poruke:** \`${u.messageCount}\` | 🎙️ **Voice:** \`${u.voiceString}\``;
         };
 
-        let topText = topActive.map(formatMember).join('\n\n') || 'Nema podataka';
-        let leastText = leastActive.map(formatMember).join('\n\n') || 'Nema podataka';
+        let topText1 = topActive.slice(0, 5).map(formatMember).join('\n\n') || 'Nema podataka';
+        let topText2 = topActive.slice(5, 10).map((u, i) => formatMember(u, i + 5)).join('\n\n');
+
+        let leastText1 = leastActive.slice(0, 5).map(formatMember).join('\n\n') || 'Nema podataka';
+        let leastText2 = leastActive.slice(5, 10).map((u, i) => formatMember(u, i + 5)).join('\n\n');
 
         // Dijagnostička informacija
         const diagText = `🔧 Firebase: ${firebaseConnected ? '✅ Povezan' : '❌ Nije povezan'} | Zapisi u bazi: **${statsKeys.length}** | Članova na serveru: **${userActivity.length}**`;
 
+        const embedFields = [];
+        embedFields.push({ name: '🏆 Najaktivniji (1-5)', value: topText1, inline: false });
+        if (topText2) embedFields.push({ name: '🏆 Najaktivniji (6-10)', value: topText2, inline: false });
+        
+        embedFields.push({ name: '⚠️ Najmanje aktivni (1-5)', value: leastText1, inline: false });
+        if (leastText2) embedFields.push({ name: '⚠️ Najmanje aktivni (6-10)', value: leastText2, inline: false });
+
+        embedFields.push({ name: `👻 Potpuno neaktivni (${inactive.length} članova)`, value: 'Za kompletnu listu neaktivnih koristite komandu `/neaktivni`', inline: false });
+        embedFields.push({ name: '🔧 Dijagnostika', value: diagText, inline: false });
+
         const embed = new EmbedBuilder()
             .setColor('#3498db')
             .setTitle('📊 LSPD Nedeljni Izveštaj Aktivnosti (Poslednjih 7 dana)')
-            .addFields(
-                { name: '🏆 Najaktivniji', value: topText, inline: false },
-                { name: '⚠️ Najmanje aktivni', value: leastText, inline: false },
-                { name: `👻 Potpuno neaktivni (${inactive.length} članova)`, value: 'Za kompletnu listu neaktivnih koristite komandu `/neaktivni`', inline: false },
-                { name: '🔧 Dijagnostika', value: diagText, inline: false }
-            )
+            .addFields(embedFields)
             .setTimestamp()
             .setFooter({ text: 'Izveštaj generisan za Načelnika' });
 
