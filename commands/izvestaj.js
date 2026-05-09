@@ -15,9 +15,9 @@ module.exports = {
 
         await interaction.deferReply(); 
 
-        statsStore.cleanOldData();
+        await statsStore.cleanOldData();
 
-        const allStats = statsStore.getAllStats();
+        const allStats = await statsStore.getAllStats();
         const now = new Date();
         const sevenDaysAgo = new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000));
 
@@ -84,7 +84,19 @@ module.exports = {
         
         let inactiveText = inactive.map(u => `<@${u.id}>`).join(', ');
         if (!inactiveText) inactiveText = 'Nema neaktivnih članova.';
-        else if (inactiveText.length > 1024) inactiveText = inactiveText.substring(0, 1020) + '...';
+        else if (inactiveText.length > 1024) {
+            // Discord embed polje ima limit od 1024 karaktera
+            // Prikaži koliko stane + ukupan broj
+            let truncated = '';
+            const mentions = inactive.map(u => `<@${u.id}>`);
+            let shown = 0;
+            for (const mention of mentions) {
+                if ((truncated + mention + ', ').length > 950) break;
+                truncated += (shown > 0 ? ', ' : '') + mention;
+                shown++;
+            }
+            inactiveText = truncated + `\n\n... i još **${inactive.length - shown}** neaktivnih članova (ukupno: **${inactive.length}**)`;
+        }
 
         const embed = new EmbedBuilder()
             .setColor('#3498db')
