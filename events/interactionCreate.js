@@ -2,6 +2,7 @@ const { Events, EmbedBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, Ac
 
 const ZAMENICI_CHANNEL_ID = '1467412666497634487';
 const ODSUSTVO_CHANNEL_ID = '1467410304999624714';
+const OTKAZ_CHANNEL_ID = '1467415847562772550';
 const dutyStore = require('../utils/dutyStore');
 const statsStore = require('../utils/statsStore');
 
@@ -284,11 +285,32 @@ module.exports = {
             else if (customId.startsWith('otkaz_potvrdi_')) {
                 const parts = customId.replace('otkaz_potvrdi_', '').split('_');
                 const targetUserId = parts[0];
-                const razlog = parts.slice(1).join('_');
+                const razlog = parts.slice(1).join('_').replace(/-/g, ' ');
 
                 try {
                     const targetMember = await interaction.guild.members.fetch(targetUserId);
-                    
+                    const targetUsername = targetMember.user.username;
+                    const targetDisplayName = targetMember.displayName;
+
+                    // Brisanje znacke iz badges.json
+                    try {
+                        const fs = require('fs');
+                        const path = require('path');
+                        const badgesFile = path.join(__dirname, '../badges.json');
+                        if (fs.existsSync(badgesFile)) {
+                            const badges = JSON.parse(fs.readFileSync(badgesFile));
+                            for (const [num, data] of Object.entries(badges)) {
+                                if (data.id === targetUserId) {
+                                    delete badges[num];
+                                    break;
+                                }
+                            }
+                            fs.writeFileSync(badgesFile, JSON.stringify(badges, null, 2));
+                        }
+                    } catch (badgeErr) {
+                        console.warn('[OTKAZ] Greška pri brisanju značke:', badgeErr.message);
+                    }
+
                     // Pokušaj slanja DM-a pre kicka
                     try {
                         const dmEmbed = new EmbedBuilder()
@@ -299,17 +321,44 @@ module.exports = {
                         await targetMember.send({ embeds: [dmEmbed] });
                     } catch (e) { /* ignore DM fail */ }
 
+                    // Kick korisnika
                     await targetMember.kick(`Otkaz — ${razlog}`);
 
+                    // Javni embed u kanal za otkaze
+                    try {
+                        const otkazChannel = await interaction.client.channels.fetch(OTKAZ_CHANNEL_ID);
+                        if (otkazChannel) {
+                            const publicEmbed = new EmbedBuilder()
+                                .setColor('#8B0000')
+                                .setTitle('🛑 LSPD | Raskid Ugovora')
+                                .addFields(
+                                    { name: 'Službenik', value: `**${targetDisplayName}** (${targetUsername})`, inline: true },
+                                    { name: 'Odluku doneo', value: `<@${interaction.user.id}>`, inline: true },
+                                    { name: 'Razlog', value: razlog, inline: false }
+                                )
+                                .setTimestamp()
+                                .setFooter({ text: 'Odluka Načelnika je konačna.' });
+                            await otkazChannel.send({ embeds: [publicEmbed] });
+                        }
+                    } catch (chErr) {
+                        console.warn('[OTKAZ] Ne može se poslati u kanal za otkaze:', chErr.message);
+                    }
+
+                    // Ažuriranje ephemeral poruke potvrde
                     const confirmEmbed = new EmbedBuilder()
                         .setColor('#ff0000')
-                        .setTitle('🛑 Otkaz izvršen')
-                        .setDescription(`Korisnik **${targetMember.user.username}** je izbačen sa servera.\n**Razlog:** ${razlog}`)
+                        .setTitle('✅ Otkaz izvršen')
+                        .setDescription(`Korisnik **${targetDisplayName}** je izbačen sa servera.\n**Razlog:** ${razlog}\n\nObaveštenje je objavljeno u kanalu za otkaze.`)
                         .setTimestamp();
 
                     await interaction.update({ embeds: [confirmEmbed], components: [] });
                 } catch (err) {
-                    await interaction.reply({ content: `❌ Greška pri kicku: ${err.message}`, ephemeral: true });
+                    console.error('[OTKAZ ERROR]', err);
+                    try {
+                        await interaction.reply({ content: `❌ Greška: ${err.message}`, ephemeral: true });
+                    } catch(e) {
+                        await interaction.update({ content: `❌ Greška: ${err.message}`, components: [] });
+                    }
                 }
                 return;
             }
