@@ -76,7 +76,7 @@ module.exports = {
 
                     const panelEmbed = new EmbedBuilder()
                         .setColor('#0099ff')
-                        .setTitle('👮 LSPD - Evidencija Dužnosti')
+                        .setTitle('👮 SUD - Evidencija Dužnosti')
                         .setDescription('Kliknite na dugme ispod da biste se prijavili ili odjavili sa dužnosti.\n\nSistem automatski beleži vaše vreme i aktivnost.')
                         .setTimestamp();
 
@@ -102,7 +102,7 @@ module.exports = {
             else if (customId === 'btn_licna_karta') {
                 const modal = new ModalBuilder()
                     .setCustomId('register_modal')
-                    .setTitle('LSPD Lična Karta');
+                    .setTitle('SUD Lična Karta');
 
                 const imeInput = new TextInputBuilder()
                     .setCustomId('ime_input')
@@ -169,7 +169,7 @@ module.exports = {
                     const ticketEmbed = new EmbedBuilder()
                         .setColor('#e67e22')
                         .setTitle('🎫 Novi Tiket')
-                        .setDescription(`Dobrodošli <@${user.id}>! Opišite svoj problem i High Command će vam odgovoriti u najkraćem roku.\n\n**Napomena:** Ovaj tiket je vidljiv isključivo Načelnicima i vama.\n\nDa zatvorite tiket, kliknite na dugme ispod.`)
+                        .setDescription(`Dobrodošli <@${user.id}>! Opišite svoj problem i High Command će vam odgovoriti u najkraćem roku.\n\n**Napomena:** Ovaj tiket je vidljiv isključivo Uprava Sudama i vama.\n\nDa zatvorite tiket, kliknite na dugme ispod.`)
                         .setTimestamp();
 
                     const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
@@ -269,8 +269,8 @@ module.exports = {
                         .setTitle(isApproved ? '✅ Odsustvo Odobreno' : '❌ Odsustvo Odbijeno')
                         .setDescription(
                             isApproved
-                                ? `Vaša prijava odsustva je **odobrena** od strane načelnika **${interaction.user.displayName}**.`
-                                : `Vaša prijava odsustva je **odbijena** od strane načelnika **${interaction.user.displayName}**.\n\nUkoliko imate pitanja, obratite se High Commandu.`
+                                ? `Vaša prijava odsustva je **odobrena** od strane Predsednik Sudaa **${interaction.user.displayName}**.`
+                                : `Vaša prijava odsustva je **odbijena** od strane Predsednik Sudaa **${interaction.user.displayName}**.\n\nUkoliko imate pitanja, obratite se High Commandu.`
                         )
                         .setTimestamp();
                     await targetUser.send({ embeds: [dmEmbed] });
@@ -319,8 +319,8 @@ module.exports = {
                     try {
                         const dmEmbed = new EmbedBuilder()
                             .setColor('#ff0000')
-                            .setTitle('🛑 LSPD — Raskid Ugovora')
-                            .setDescription(`Vaš ugovor sa LSPD-om je raskinut.\n\n**Razlog:** ${razlog}\n\n*Odluka načelnika je konačna.*`)
+                            .setTitle('🛑 SUD — Raskid Ugovora')
+                            .setDescription(`Vaš ugovor sa SUD-om je raskinut.\n\n**Razlog:** ${razlog}\n\n*Odluka Predsednik Sudaa je konačna.*`)
                             .setTimestamp();
                         await targetMember.send({ embeds: [dmEmbed] });
                     } catch (e) { /* ignore DM fail */ }
@@ -334,14 +334,14 @@ module.exports = {
                         if (otkazChannel) {
                             const publicEmbed = new EmbedBuilder()
                                 .setColor('#8B0000')
-                                .setTitle('🛑 LSPD | Raskid Ugovora')
+                                .setTitle('🛑 SUD | Raskid Ugovora')
                                 .addFields(
-                                    { name: 'Službenik', value: `<@${targetUserId}> (${targetUsername})`, inline: true },
+                                    { name: 'član', value: `<@${targetUserId}> (${targetUsername})`, inline: true },
                                     { name: 'Odluku doneo', value: `<@${interaction.user.id}>`, inline: true },
                                     { name: 'Razlog', value: razlog, inline: false }
                                 )
                                 .setTimestamp()
-                                .setFooter({ text: 'Odluka Načelnika je konačna.' });
+                                .setFooter({ text: 'Odluka Predsednik Sudaa je konačna.' });
                             await otkazChannel.send({ embeds: [publicEmbed] });
                         }
                     } catch (chErr) {
@@ -387,7 +387,7 @@ module.exports = {
                 // Generate Embed
                 const idEmbed = new EmbedBuilder()
                     .setColor('#0099ff')
-                    .setTitle('👮 LSPD Lična Karta')
+                    .setTitle('👮 SUD Lična Karta')
                     .setThumbnail(interaction.user.displayAvatarURL())
                     .addFields(
                         { name: 'Ime i Prezime', value: ime, inline: true },
@@ -397,35 +397,35 @@ module.exports = {
                     )
                     .setTimestamp();
 
-                // Dodavanje role 'Policajac'
-                let policajacRole = interaction.guild.roles.cache.find(r => r.name.toLowerCase() === 'policajac');
+                // Dodavanje role 'član suda'
+                let clanSudaRole = interaction.guild.roles.cache.find(r => r.name.toLowerCase() === 'član suda');
                 
-                if (!policajacRole) {
+                if (!clanSudaRole) {
                     try {
-                        policajacRole = await interaction.guild.roles.create({
-                            name: 'Policajac',
+                        clanSudaRole = await interaction.guild.roles.create({
+                            name: 'član suda',
                             color: '#3498db',
-                            reason: 'Automatski kreirana rola za nove LSPD clanove'
+                            reason: 'Automatski kreirana rola za nove SUD clanove'
                         });
                     } catch (err) {
-                        console.error('[LK] Ne mogu da kreiram rolu Policajac:', err.message);
+                        console.error('[LK] Ne mogu da kreiram rolu član suda:', err.message);
                     }
                 }
 
                 let roleWarning = '';
-                if (policajacRole) {
+                if (clanSudaRole) {
                     try {
-                        await interaction.member.roles.add(policajacRole);
+                        await interaction.member.roles.add(clanSudaRole);
                     } catch (err) {
-                        console.error('[LK] Ne mogu dodeliti rolu Policajac:', err.message);
-                        roleWarning = '\n⚠️ *Napomena: Bot nije uspeo da vam dodeli ulogu Policajac jer je njegova uloga niža od nje u hijerarhiji servera.*';
+                        console.error('[LK] Ne mogu dodeliti rolu član suda:', err.message);
+                        roleWarning = '\n⚠️ *Napomena: Bot nije uspeo da vam dodeli ulogu član suda jer je njegova uloga niža od nje u hijerarhiji servera.*';
                     }
                 }
 
                 // Attempt to change nickname
                 try {
                     // This can fail if the user is owner or has higher role than the bot
-                    await interaction.member.setNickname(`${ime} (Policajac)`);
+                    await interaction.member.setNickname(`${ime} (Član Suda)`);
                 } catch (err) {
                     console.log(`Failed to set nickname for ${interaction.user.tag}. Missing permissions.`);
                 }
@@ -436,14 +436,14 @@ module.exports = {
                 // Obriši stari panel sa dugmetom i pošalji novi na dno kanala
                 try {
                     const messages = await interaction.channel.messages.fetch({ limit: 50 });
-                    const oldPanel = messages.find(m => m.author.id === interaction.client.user.id && m.components.length > 0 && m.embeds.length > 0 && m.embeds[0].title === '👮 LSPD Lične Karte');
+                    const oldPanel = messages.find(m => m.author.id === interaction.client.user.id && m.components.length > 0 && m.embeds.length > 0 && m.embeds[0].title === '👮 SUD Lične Karte');
                     if (oldPanel) await oldPanel.delete();
                 } catch (e) { /* ignore */ }
 
                 const panelEmbed = new EmbedBuilder()
                     .setColor('#0099ff')
-                    .setTitle('👮 LSPD Lične Karte')
-                    .setDescription('Dobrodošli u LSPD!\n\nKliknite na dugme ispod kako biste kreirali svoju službenu Ličnu Kartu.\nNakon kreiranja, automatski ćete dobiti ulogu **Policajac**.')
+                    .setTitle('👮 SUD Lične Karte')
+                    .setDescription('Dobrodošli u SUD!\n\nKliknite na dugme ispod kako biste kreirali svoju službenu Ličnu Kartu.\nNakon kreiranja, automatski ćete dobiti ulogu **član suda**.')
                     .setThumbnail(interaction.guild.iconURL());
 
                 const panelRow = new ActionRowBuilder()
@@ -496,7 +496,7 @@ module.exports = {
                         { name: 'Razlog', value: razlog, inline: false }
                     )
                     .setTimestamp()
-                    .setFooter({ text: 'Na čekanju — čeka se odluka načelnika' });
+                    .setFooter({ text: 'Na čekanju — čeka se odluka Predsednik Sudaa' });
 
                 const approveRow = new ActionRowBuilder().addComponents(
                     new ButtonBuilder()
@@ -509,9 +509,9 @@ module.exports = {
                         .setStyle(ButtonStyle.Danger),
                 );
 
-                await interaction.reply({ content: '✅ Vaša prijava za odsustvo je uspešno zabeležena. Načelnik će je pregledati.', ephemeral: true });
+                await interaction.reply({ content: '✅ Vaša prijava za odsustvo je uspešno zabeležena. Predsednik Suda će je pregledati.', ephemeral: true });
 
-                // Slanje u kanal za odsustva (za načelnike)
+                // Slanje u kanal za odsustva (za Upravu Suda)
                 try {
                     const odsustvoChannel = await interaction.client.channels.fetch(ODSUSTVO_CHANNEL_ID);
                     if (odsustvoChannel) {
@@ -551,3 +551,5 @@ module.exports = {
         }
 	},
 };
+
+

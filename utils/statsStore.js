@@ -13,7 +13,7 @@ module.exports = {
             return;
         }
         try {
-            const ref = db.collection('stats').doc(userId);
+            const ref = db.collection('sud_stats').doc(userId);
             const today = getTodayString();
             
             await ref.set({
@@ -33,7 +33,7 @@ module.exports = {
             return;
         }
         try {
-            const ref = db.collection('stats').doc(userId);
+            const ref = db.collection('sud_stats').doc(userId);
             const today = getTodayString();
             
             await ref.set({
@@ -53,7 +53,7 @@ module.exports = {
             return;
         }
         try {
-            const ref = db.collection('stats').doc(userId);
+            const ref = db.collection('sud_stats').doc(userId);
             const today = getTodayString();
             
             await ref.set({
@@ -69,7 +69,7 @@ module.exports = {
 
     addPlus: async (userId, username) => {
         if (!db) return;
-        const ref = db.collection('stats').doc(userId);
+        const ref = db.collection('sud_stats').doc(userId);
         await ref.set({
             username: username,
             pluses: admin.firestore.FieldValue.increment(1)
@@ -78,7 +78,7 @@ module.exports = {
 
     addMinus: async (userId, username) => {
         if (!db) return;
-        const ref = db.collection('stats').doc(userId);
+        const ref = db.collection('sud_stats').doc(userId);
         await ref.set({
             username: username,
             minuses: admin.firestore.FieldValue.increment(1)
@@ -87,7 +87,7 @@ module.exports = {
 
     addOtkaz: async (userId, username) => {
         if (!db) return;
-        const ref = db.collection('stats').doc(userId);
+        const ref = db.collection('sud_stats').doc(userId);
         await ref.set({
             username: username,
             otkazi: admin.firestore.FieldValue.increment(1)
@@ -96,13 +96,13 @@ module.exports = {
 
     getUserStats: async (userId) => {
         if (!db) return null;
-        const doc = await db.collection('stats').doc(userId).get();
+        const doc = await db.collection('sud_stats').doc(userId).get();
         return doc.exists ? doc.data() : null;
     },
 
     getAllStats: async () => {
         if (!db) return {};
-        const snapshot = await db.collection('stats').get();
+        const snapshot = await db.collection('sud_stats').get();
         const users = {};
         snapshot.forEach(doc => {
             users[doc.id] = doc.data();
@@ -112,7 +112,7 @@ module.exports = {
     
     cleanOldData: async () => {
         if (!db) return;
-        const snapshot = await db.collection('stats').get();
+        const snapshot = await db.collection('sud_stats').get();
         const now = new Date();
         const sevenDaysAgo = new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000));
         
@@ -161,7 +161,7 @@ module.exports = {
             }
 
             if (needsUpdate) {
-                batch.update(db.collection('stats').doc(doc.id), updates);
+                batch.update(db.collection('sud_stats').doc(doc.id), updates);
                 operationsCount++;
             }
         });
@@ -171,3 +171,5 @@ module.exports = {
         }
     }
 };
+
+

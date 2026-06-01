@@ -37,8 +37,8 @@ module.exports = {
             // --- EMBED 1: Uvod + Setup komande ---
             const embed1 = new EmbedBuilder()
                 .setColor('#1a5276')
-                .setTitle('📘 LSPD Support System — User Manual')
-                .setDescription('Kompletno uputstvo za korišćenje LSPD Discord Bota.\\nBot radi **24/7** na cloud serveru. Svi podaci se čuvaju u Firebase bazi.')
+                .setTitle('📘 SUD Support System — User Manual')
+                .setDescription('Kompletno uputstvo za korišćenje SUD Discord Bota.\\nBot radi **24/7** na cloud serveru. Svi podaci se čuvaju u Firebase bazi.')
                 .addFields(
                     {
                         name: '⚙️ Setup Komande (Samo za Admine — koriste se JEDNOM)',
@@ -72,7 +72,7 @@ module.exports = {
                         value: [
                             '1. Klikni dugme **🪪 Kreiraj Ličnu Kartu**.',
                             '2. Popuni formu: Ime i Prezime, UUID, Steam ime.',
-                            '3. Bot kreira embed ličnu kartu i dodeljuje ti rolu **Policajac**.',
+                            '3. Bot kreira embed ličnu kartu i dodeljuje ti rolu **član suda**.',
                             '',
                             'Panel se automatski premešta na dno kanala.',
                         ].join('\\n')
@@ -86,17 +86,17 @@ module.exports = {
                 .setTitle('🏅 Značke & ✅ Plus / ⚠️ Minus / 🛑 Otkaz')
                 .addFields(
                     {
-                        name: '🏅 Značke (Samo Načelnici)',
+                        name: '🏅 Značke (Samo Uprava Suda)',
                         value: [
                             '`/znacka @korisnik` — Dodeljuje sledeći slobodan broj značke.',
                             '`/izmeni-znacku @korisnik [broj]` — Ručno menja broj značke.',
                         ].join('\\n')
                     },
                     {
-                        name: '✅⚠️🛑 Disciplinski Sistem (Samo Načelnici)',
+                        name: '✅⚠️🛑 Disciplinski Sistem (Samo Uprava Suda)',
                         value: [
-                            '`/plus @korisnik [razlog]` — Pohvala službeniku.',
-                            '`/minus @korisnik [razlog]` — Opomena službeniku.',
+                            '`/plus @korisnik [razlog]` — Pohvala članu.',
+                            '`/minus @korisnik [razlog]` — Opomena članu.',
                             '`/otkaz @korisnik [razlog]` — Raskid ugovora.',
                             '',
                             'Sve se beleži u bazu i prikazuje u izveštaju!',
@@ -111,7 +111,7 @@ module.exports = {
                 .setTitle('📊 Izveštaj & 🎫 Tiketi & 📄 Odsustvo')
                 .addFields(
                     {
-                        name: '📊 Nedeljni Izveštaj (Samo Načelnici)',
+                        name: '📊 Nedeljni Izveštaj (Samo Uprava Suda)',
                         value: [
                             '`/izvestaj` — Generiše pregled aktivnosti cele ekipe za 7 dana.',
                             '🏆 Najaktivniji | ⚠️ Najmanje aktivni | 👻 Neaktivni',
@@ -124,7 +124,7 @@ module.exports = {
                     },
                     {
                         name: '🎫 Tiketi',
-                        value: 'Klikni **📩 Otvori Tiket** — Bot kreira privatni kanal za komunikaciju sa Načelnicima.'
+                        value: 'Klikni **📩 Otvori Tiket** — Bot kreira privatni kanal za komunikaciju sa Uprava Sudama.'
                     },
                     {
                         name: '📄 Odsustvo',
@@ -133,13 +133,13 @@ module.exports = {
                     {
                         name: '🔐 Ko šta može',
                         value: [
-                            '**Svi službenici:** Dužnost, Lična karta, Tiketi, Odsustvo',
-                            '**Načelnici (Director/Zamenik):** Značke, Plus/Minus/Otkaz, Izveštaj',
+                            '**Svi članovi:** Dužnost, Lična karta, Tiketi, Odsustvo',
+                            '**Uprava Suda (Director/Zamenik):** Značke, Plus/Minus/Otkaz, Izveštaj',
                             '**Administratori:** Setup komande + sve ostalo',
                         ].join('\\n')
                     }
                 )
-                .setFooter({ text: 'Stranica 4/4 — LSPD Support System v2.0' })
+                .setFooter({ text: 'Stranica 4/4 — SUD Support System v2.0' })
                 .setTimestamp();
 
             embeds.push(embed1, embed2, embed3, embed4);
@@ -155,7 +155,7 @@ module.exports = {
         // --- PRAĆENJE PORUKA U BAZI ---
         statsStore.addMessage(message.author.id, message.author.username);
 
-        // --- MODERACIJA UGAŠENA (čeka odobrenje načelnika) ---
+        // --- MODERACIJA UGAŠENA (čeka odobrenje Predsednik Sudaa) ---
         /*
         const content = message.content.toLowerCase();
 
@@ -244,7 +244,7 @@ module.exports = {
                     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
                     const model = genAI.getGenerativeModel({ 
                         model: "gemini-1.5-flash",
-                        systemInstruction: "Ti si profesionalni LSPD dispečer na roleplay serveru. Tvoje ime je LSPD Bot. Odgovaraj kratko, jasno, uvek profesionalno i u duhu policijskog roleplay-a. Pomaži građanima i kolegama policajcima dajući savete i kratke odgovore. Zadrži roleplay karakter u svakom trenutku. Koristi policijske kodove kada je prikladno (npr. 10-4 za potvrdu)."
+                        systemInstruction: "Ti si profesionalni SUD dispečer na roleplay serveru. Tvoje ime je SUD Bot. Odgovaraj kratko, jasno, uvek profesionalno i u duhu policijskog roleplay-a. Pomaži građanima i kolegama članovi sudama dajući savete i kratke odgovore. Zadrži roleplay karakter u svakom trenutku. Koristi policijske kodove kada je prikladno (npr. 10-4 za potvrdu)."
                     });
                     
                     const result = await model.generateContent(aiPrompt);
@@ -278,10 +278,10 @@ module.exports = {
 
                 const idEmbed = new EmbedBuilder()
                     .setColor('#0099ff')
-                    .setTitle('👮 LSPD Lična Karta')
+                    .setTitle('👮 SUD Lična Karta')
                     .setThumbnail(message.author.displayAvatarURL())
                     .addFields(
-                        { name: 'Službenik', value: `<@${message.author.id}>`, inline: false },
+                        { name: 'član', value: `<@${message.author.id}>`, inline: false },
                         { name: 'Ime na ličnoj', value: imeNaLicnoj, inline: true },
                         { name: 'Ime na Steam-u', value: imeNaSteam, inline: true },
                         { name: 'UUID', value: uuid, inline: true }
@@ -289,10 +289,10 @@ module.exports = {
                     .setFooter({ text: 'Automatski kreirana evidencija' })
                     .setTimestamp();
 
-                // Dodavanje role 'Policajac'
-                const policajacRole = message.guild.roles.cache.find(r => r.name.toLowerCase() === 'policajac');
-                if (policajacRole) {
-                    await message.member.roles.add(policajacRole).catch(console.error);
+                // Dodavanje role 'član suda'
+                const clanSudaRole = message.guild.roles.cache.find(r => r.name.toLowerCase() === 'član suda');
+                if (clanSudaRole) {
+                    await message.member.roles.add(clanSudaRole).catch(console.error);
                 }
 
                 // Posalji novu poruku i obrisi staru
@@ -306,3 +306,5 @@ module.exports = {
         }
     },
 };
+
+

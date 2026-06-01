@@ -6,16 +6,16 @@ module.exports = {
 		.setDescription('Postavlja panel za prijavu/odjavu sa dužnosti'),
 	async execute(interaction) {
         if (!interaction.member) return interaction.reply({ content: '❌ Ove komande se mogu koristiti isključivo na serveru, a ne u privatnim porukama!', ephemeral: true });
-		const hasRole = interaction.member.roles.cache.some(role => ['director', 'zamenik nacelnika'].includes(role.name.toLowerCase()));
+		const hasRole = interaction.member.roles.cache.some(role => ['director', 'zamenik nacelnika', 'predsednik suda', 'zamenik predsednika', 'sudija'].includes(role.name.toLowerCase()));
 		const isAdmin = interaction.member.permissions.has(PermissionFlagsBits.Administrator);
 		if (!hasRole && !isAdmin) {
-			return interaction.reply({ content: '❌ Samo Načelnici i Administratori mogu koristiti ovu komandu!', ephemeral: true });
+			return interaction.reply({ content: '❌ Samo Uprava Suda i Administratori mogu koristiti ovu komandu!', ephemeral: true });
 		}
 		const embed = new EmbedBuilder()
 			.setColor('#0099ff')
-			.setTitle('LSPD - Evidencija Dužnosti')
+			.setTitle('SUD - Evidencija Dužnosti')
 			.setDescription('Kliknite na odgovarajuće dugme ispod kako biste se prijavili ili odjavili sa dužnosti.\n\nZloupotreba ovog sistema strogo je kažnjiva.')
-            .setImage('https://media.discordapp.net/attachments/1111/1111/lspd_banner.png'); // placeholder for a banner if they want later
+            .setImage('https://media.discordapp.net/attachments/1111/1111/SUD_banner.png'); // placeholder for a banner if they want later
 
 		const row = new ActionRowBuilder()
 			.addComponents(
@@ -33,3 +33,6 @@ module.exports = {
 		await interaction.channel.send({ embeds: [embed], components: [row] });
 	},
 };
+
+
+

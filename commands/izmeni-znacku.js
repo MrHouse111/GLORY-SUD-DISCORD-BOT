@@ -19,19 +19,19 @@ function saveBadges(data) {
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('izmeni-znacku')
-        .setDescription('Ručno postavlja određeni broj značke službeniku')
-        .addUserOption(option => option.setName('sluzbenik').setDescription('Službenik kome se menja značka').setRequired(true))
+        .setDescription('Ručno postavlja određeni broj značke članu')
+        .addUserOption(option => option.setName('clan').setDescription('član kome se menja značka').setRequired(true))
         .addIntegerOption(option => option.setName('broj').setDescription('Novi broj značke').setRequired(true)),
     async execute(interaction) {
-        const hasRole = interaction.member.roles.cache.some(role => ['director', 'zamenik nacelnika', 'načelnik', 'nacelnik'].includes(role.name.toLowerCase()));
+        const hasRole = interaction.member.roles.cache.some(role => ['director', 'zamenik nacelnika', 'Predsednik Suda', 'nacelnik', 'predsednik suda', 'zamenik predsednika', 'sudija'].includes(role.name.toLowerCase()));
         const isAdmin = interaction.member.permissions.has(PermissionFlagsBits.Administrator);
         
         if (!hasRole && !isAdmin) {
-            return interaction.reply({ content: '❌ Samo Načelnici mogu upravljati značkama!', ephemeral: true });
+            return interaction.reply({ content: '❌ Samo Uprava Suda mogu upravljati značkama!', ephemeral: true });
         }
 
         const badges = loadBadges();
-        const targetUser = interaction.options.getUser('sluzbenik');
+        const targetUser = interaction.options.getUser('clan');
         const newBadge = interaction.options.getInteger('broj');
 
         // Check if newBadge is already taken
@@ -41,7 +41,7 @@ module.exports = {
             if (owner.id === targetUser.id) {
                 return interaction.reply({ content: `❌ <@${targetUser.id}> već poseduje značku broj **${newBadge}**!`, ephemeral: true });
             }
-            return interaction.reply({ content: `❌ Značka broj **${newBadge}** je već dodeljena službeniku ${ownerDisplay}!`, ephemeral: true });
+            return interaction.reply({ content: `❌ Značka broj **${newBadge}** je već dodeljena članu ${ownerDisplay}!`, ephemeral: true });
         }
 
         // Remove old badge if they had one
@@ -68,7 +68,7 @@ module.exports = {
         try {
             const dmEmbed = new EmbedBuilder()
                 .setColor('#FFD700')
-                .setTitle('👮 LSPD — Značka Ažurirana')
+                .setTitle('👮 SUD — Značka Ažurirana')
                 .setDescription(`Dodeljen vam je novi broj značke i ormarića!\n\n🪪 **Vaš novi broj značke:** \`#${newBadge}\`\n🗄️ **Vaš novi ormarić:** \`${newBadge}\`\n\n*Molimo vas da uvek koristite ovaj broj na dužnosti.*`)
                 .setTimestamp();
             await targetUser.send({ embeds: [dmEmbed] });
@@ -79,7 +79,7 @@ module.exports = {
         const embed = new EmbedBuilder()
             .setColor('#FFD700')
             .setTitle('⭐ Značka Izmenjena')
-            .setDescription(`Službeniku <@${targetUser.id}> je uspešno promenjen broj značke!`)
+            .setDescription(`članu <@${targetUser.id}> je uspešno promenjen broj značke!`)
             .addFields(
                 { name: 'Novi broj', value: `**${newBadge}**`, inline: true },
                 { name: 'Stari broj', value: oldBadge ? `${oldBadge}` : 'Nije imao', inline: true }
@@ -89,3 +89,5 @@ module.exports = {
         return interaction.reply({ embeds: [embed] });
     },
 };
+
+

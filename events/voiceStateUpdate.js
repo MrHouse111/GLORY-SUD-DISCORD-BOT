@@ -38,3 +38,5 @@ module.exports = {
         // oldState.channelId i newState.channelId će oba biti true, pa ne prekidamo sesiju.
     },
 };
+
+

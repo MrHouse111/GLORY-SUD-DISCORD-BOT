@@ -4,13 +4,13 @@ const statsStore = require('../utils/statsStore');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('neaktivni')
-        .setDescription('Prikazuje listu potpuno neaktivnih članova za poslednjih 7 dana (Samo za Načelnike)'),
+        .setDescription('Prikazuje listu potpuno neaktivnih članova za poslednjih 7 dana (Samo za Upravu Suda)'),
     async execute(interaction) {
-        const hasRole = interaction.member.roles.cache.some(role => ['director', 'zamenik nacelnika'].includes(role.name.toLowerCase()));
+        const hasRole = interaction.member.roles.cache.some(role => ['director', 'zamenik nacelnika', 'predsednik suda', 'zamenik predsednika', 'sudija'].includes(role.name.toLowerCase()));
         const isAdmin = interaction.member.permissions.has(PermissionFlagsBits.Administrator);
         
         if (!hasRole && !isAdmin) {
-            return interaction.reply({ content: '❌ Nemate dozvolu! Ovu komandu mogu koristiti samo načelnici.', ephemeral: true });
+            return interaction.reply({ content: '❌ Nemate dozvolu! Ovu komandu mogu koristiti samo Uprava Suda.', ephemeral: true });
         }
 
         await interaction.deferReply();
@@ -119,3 +119,6 @@ module.exports = {
         await interaction.editReply({ embeds: embeds.slice(0, maxEmbeds) });
     },
 };
+
+
+

@@ -3,15 +3,15 @@ const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('komande')
-        .setDescription('Prikazuje kompletno uputstvo za korišćenje LSPD Bota'),
+        .setDescription('Prikazuje kompletno uputstvo za korišćenje SUD Bota'),
     async execute(interaction) {
         const embeds = [];
 
         // --- EMBED 1: Uvod + Setup komande ---
         const embed1 = new EmbedBuilder()
             .setColor('#1a5276')
-            .setTitle('📘 LSPD Support System — User Manual')
-            .setDescription('Kompletno uputstvo za korišćenje LSPD Discord Bota.\nBot radi **24/7** na cloud serveru. Svi podaci se čuvaju u Firebase bazi.')
+            .setTitle('📘 SUD Support System — User Manual')
+            .setDescription('Kompletno uputstvo za korišćenje SUD Discord Bota.\nBot radi **24/7** na cloud serveru. Svi podaci se čuvaju u Firebase bazi.')
             .addFields(
                 {
                     name: '⚙️ Setup Komande (Samo za Admine — koriste se JEDNOM)',
@@ -45,7 +45,7 @@ module.exports = {
                     value: [
                         '1. Klikni dugme **🪪 Kreiraj Ličnu Kartu**.',
                         '2. Popuni formu: Ime i Prezime, UUID, Steam ime.',
-                        '3. Bot kreira embed ličnu kartu i dodeljuje ti rolu **Policajac**.',
+                        '3. Bot kreira embed ličnu kartu i dodeljuje ti rolu **�lan suda**.',
                         '',
                         'Panel se automatski premešta na dno kanala.',
                     ].join('\n')
@@ -59,17 +59,17 @@ module.exports = {
             .setTitle('🏅 Značke & ✅ Plus / ⚠️ Minus / 🛑 Otkaz')
             .addFields(
                 {
-                    name: '🏅 Značke (Samo Načelnici)',
+                    name: '🏅 Značke (Samo Uprava Suda)',
                     value: [
                         '`/znacka @korisnik` — Dodeljuje sledeći slobodan broj značke.',
                         '`/izmeni-znacku @korisnik [broj]` — Ručno menja broj značke.',
                     ].join('\n')
                 },
                 {
-                    name: '✅⚠️🛑 Disciplinski Sistem (Samo Načelnici)',
+                    name: '✅⚠️🛑 Disciplinski Sistem (Samo Uprava Suda)',
                     value: [
-                        '`/plus @korisnik [razlog]` — Pohvala službeniku.',
-                        '`/minus @korisnik [razlog]` — Opomena službeniku.',
+                        '`/plus @korisnik [razlog]` — Pohvala članu.',
+                        '`/minus @korisnik [razlog]` — Opomena članu.',
                         '`/otkaz @korisnik [razlog]` — Raskid ugovora.',
                         '',
                         'Sve se beleži u bazu i prikazuje u izveštaju!',
@@ -84,7 +84,7 @@ module.exports = {
             .setTitle('📊 Izveštaj & 🎫 Tiketi & 📄 Odsustvo')
             .addFields(
                 {
-                    name: '📊 Nedeljni Izveštaj (Samo Načelnici)',
+                    name: '📊 Nedeljni Izveštaj (Samo Uprava Suda)',
                     value: [
                         '`/izvestaj` — Generiše pregled aktivnosti cele ekipe za 7 dana.',
                         '🏆 Najaktivniji | ⚠️ Najmanje aktivni | 👻 Neaktivni',
@@ -97,7 +97,7 @@ module.exports = {
                 },
                 {
                     name: '🎫 Tiketi',
-                    value: 'Klikni **📩 Otvori Tiket** — Bot kreira privatni kanal za komunikaciju sa Načelnicima.'
+                    value: 'Klikni **📩 Otvori Tiket** — Bot kreira privatni kanal za komunikaciju sa Uprava Sudama.'
                 },
                 {
                     name: '📄 Odsustvo',
@@ -106,13 +106,13 @@ module.exports = {
                 {
                     name: '🔐 Ko šta može',
                     value: [
-                        '**Svi službenici:** Dužnost, Lična karta, Tiketi, Odsustvo',
-                        '**Načelnici (Director/Zamenik):** Značke, Plus/Minus/Otkaz, Izveštaj',
+                        '**Svi članovi:** Dužnost, Lična karta, Tiketi, Odsustvo',
+                        '**Uprava Suda (Director/Zamenik):** Značke, Plus/Minus/Otkaz, Izveštaj',
                         '**Administratori:** Setup komande + sve ostalo',
                     ].join('\n')
                 }
             )
-            .setFooter({ text: 'Stranica 4/4 — LSPD Support System v2.0' })
+            .setFooter({ text: 'Stranica 4/4 — SUD Support System v2.0' })
             .setTimestamp();
 
         embeds.push(embed1, embed2, embed3, embed4);
@@ -120,3 +120,5 @@ module.exports = {
         await interaction.reply({ embeds: embeds, ephemeral: true });
     },
 };
+
+

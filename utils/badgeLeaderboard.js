@@ -36,12 +36,12 @@ function buildLeaderboardEmbed(badges) {
     let description = '';
 
     if (entries.length === 0) {
-        description = '*Trenutno nema dodeljenih znački.*\n\n> Načelnici mogu dodeliti značke komandom `/znacka dodeli`';
+        description = '*Trenutno nema dodeljenih znački.*\n\n> Uprava Suda mogu dodeliti značke komandom `/znacka dodeli`';
     } else {
         // Header tabele
         description += '```\n';
         description += '╔═══════╦══════════════════════════╗\n';
-        description += '║ BR.   ║ SLUŽBENIK                ║\n';
+        description += '║ BR.   ║ član                ║\n';
         description += '╠═══════╬══════════════════════════╣\n';
         description += '```\n';
 
@@ -56,7 +56,7 @@ function buildLeaderboardEmbed(badges) {
 
     const embed = new EmbedBuilder()
         .setColor('#FFD700')
-        .setTitle('🏛️ LSPD — REGISTAR ZNAČKI I ORMARIĆA')
+        .setTitle('🏛️ SUD — REGISTAR ZNAČKI I ORMARIĆA')
         .setDescription(
             '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
             '> *Službeni registar svih dodeljenih znački i ormarića\n> Los Santos Police Department*\n' +
@@ -66,7 +66,7 @@ function buildLeaderboardEmbed(badges) {
         .addFields(
             { name: '📊 Statistika', value: `> Ukupno aktivnih znački: **${totalBadges}**\n> Sledeći slobodan broj: **#${getNextFree(badges)}**`, inline: false }
         )
-        .setFooter({ text: 'LSPD Automatski Sistem • Ažurira se automatski pri svakoj promeni' })
+        .setFooter({ text: 'SUD Automatski Sistem • Ažurira se automatski pri svakoj promeni' })
         .setTimestamp();
 
     return embed;
@@ -152,3 +152,5 @@ module.exports = {
     loadLeaderboardConfig,
     saveLeaderboardConfig
 };
+
+

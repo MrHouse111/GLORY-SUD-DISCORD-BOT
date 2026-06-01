@@ -3,7 +3,7 @@ const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } = require('disc
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('migrate-licne-karte')
-		.setDescription('Pretvara sve stare obične poruke u ovom kanalu u LSPD Lične Karte (Samo za admine)')
+		.setDescription('Pretvara sve stare obične poruke u ovom kanalu u SUD Lične Karte (Samo za admine)')
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 	async execute(interaction) {
         await interaction.deferReply({ ephemeral: true });
@@ -40,10 +40,10 @@ module.exports = {
 
                 const idEmbed = new EmbedBuilder()
                     .setColor('#0099ff')
-                    .setTitle('👮 LSPD Lična Karta')
+                    .setTitle('👮 SUD Lična Karta')
                     .setThumbnail(msg.author.displayAvatarURL())
                     .addFields(
-                        { name: 'Službenik', value: `<@${msg.author.id}>`, inline: false },
+                        { name: 'član', value: `<@${msg.author.id}>`, inline: false },
                         { name: 'Ime na ličnoj', value: imeNaLicnoj, inline: true },
                         { name: 'Ime na Steam-u', value: imeNaSteam, inline: true },
                         { name: 'UUID', value: uuid, inline: true }
@@ -66,3 +66,5 @@ module.exports = {
         }
 	},
 };
+
+

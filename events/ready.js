@@ -6,7 +6,7 @@ module.exports = {
 	name: Events.ClientReady,
 	once: true,
 	execute(client) {
-		console.log(`LSPD Bot is online as ${client.user.tag}!`);
+		console.log(`SUD Bot is online as ${client.user.tag}!`);
 
 		// Inicijalizuj ljude koji su već u voice kanalu pre nego što se bot upalio (ili posle restarta)
 		let voiceCount = 0;
@@ -25,3 +25,5 @@ module.exports = {
 		console.log(`[VOICE] Inicijalizovano ${voiceCount} aktivnih voice sesija nakon restarta bota.`);
 	},
 };
+
+

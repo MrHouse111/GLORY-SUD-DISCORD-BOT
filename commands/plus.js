@@ -4,34 +4,34 @@ const statsStore = require('../utils/statsStore');
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('plus')
-		.setDescription('Dodeljuje plus (+) službeniku (Samo za Načelnike)')
+		.setDescription('Dodeljuje plus (+) članu (Samo za Upravu Suda)')
         .addUserOption(option => 
-            option.setName('sluzbenik')
-                .setDescription('Službenik kom se dodeljuje plus')
+            option.setName('clan')
+                .setDescription('član kom se dodeljuje plus')
                 .setRequired(true))
         .addStringOption(option => 
             option.setName('razlog')
                 .setDescription('Razlog dodeljivanja plusa')
                 .setRequired(true)),
 	async execute(interaction) {
-        const hasRole = interaction.member.roles.cache.some(role => ['director', 'zamenik nacelnika'].includes(role.name.toLowerCase()));
+        const hasRole = interaction.member.roles.cache.some(role => ['director', 'zamenik nacelnika', 'predsednik suda', 'zamenik predsednika', 'sudija'].includes(role.name.toLowerCase()));
         const isAdmin = interaction.member.permissions.has(PermissionFlagsBits.Administrator);
         
         if (!hasRole && !isAdmin) {
-            return interaction.reply({ content: '❌ Nemate dozvolu! Ovu komandu mogu koristiti samo načelnici.', ephemeral: true });
+            return interaction.reply({ content: '❌ Nemate dozvolu! Ovu komandu mogu koristiti samo Uprava Suda.', ephemeral: true });
         }
 
-        const targetUser = interaction.options.getUser('sluzbenik');
+        const targetUser = interaction.options.getUser('clan');
         const razlog = interaction.options.getString('razlog');
 
         statsStore.addPlus(targetUser.id, targetUser.username);
 
 		const embed = new EmbedBuilder()
 			.setColor('#00ff00')
-			.setTitle('✅ LSPD | Novi Plus')
+			.setTitle('✅ SUD | Novi Plus')
             .setThumbnail(targetUser.displayAvatarURL())
             .addFields(
-                { name: 'Službenik:', value: `<@${targetUser.id}>`, inline: true },
+                { name: 'član:', value: `<@${targetUser.id}>`, inline: true },
                 { name: 'Dodelio:', value: `<@${interaction.user.id}>`, inline: true },
                 { name: 'Razlog:', value: razlog, inline: false }
             )
@@ -40,3 +40,6 @@ module.exports = {
 		await interaction.reply({ embeds: [embed] });
 	},
 };
+
+
+

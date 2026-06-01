@@ -5,18 +5,18 @@ const { db } = require('../utils/firebase');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('izvestaj')
-        .setDescription('Generiše nedeljni izveštaj aktivnosti cele LSPD ekipe (Samo za Načelnike)'),
+        .setDescription('Generiše nedeljni izveštaj aktivnosti cele SUD ekipe (Samo za Upravu Suda)'),
     async execute(interaction) {
         const hasRole = interaction.member.roles.cache.some(role =>
-            ['director', 'zamenik nacelnika'].includes(role.name.toLowerCase())
+            ['director', 'zamenik nacelnika', 'predsednik suda', 'zamenik predsednika', 'sudija'].includes(role.name.toLowerCase())
         );
         const isAdmin = interaction.member.permissions.has(PermissionFlagsBits.Administrator);
 
         if (!hasRole && !isAdmin) {
-            return interaction.reply({ content: '❌ Nemate dozvolu! Ovu komandu mogu koristiti samo načelnici.', ephemeral: true });
+            return interaction.reply({ content: '❌ Nemate dozvolu! Ovu komandu mogu koristiti samo Uprava Suda.', ephemeral: true });
         }
 
-        // EPHEMERAL — vidi samo načelnik koji pokreće
+        // EPHEMERAL — vidi samo Predsednik Suda koji pokreće
         await interaction.deferReply({ ephemeral: true });
 
         await statsStore.cleanOldData();
@@ -88,7 +88,7 @@ module.exports = {
                 dutyString: `${dutyH}h ${dutyM}m`,
                 pluses: userStats ? (userStats.pluses || 0) : 0,
                 minuses: userStats ? (userStats.minuses || 0) : 0,
-                isPolicajac: member.roles.cache.some(r => r.name.toLowerCase() === 'policajac')
+                isClanSuda: member.roles.cache.some(r => r.name.toLowerCase() === 'član suda')
             });
         });
 
@@ -102,7 +102,7 @@ module.exports = {
         });
 
         const withActivity = userActivity.filter(u => u.dutyMs > 0 || u.messageCount > 0 || u.voiceMs > 0);
-        const inactive = userActivity.filter(u => u.dutyMs === 0 && u.messageCount === 0 && u.voiceMs === 0 && u.isPolicajac);
+        const inactive = userActivity.filter(u => u.dutyMs === 0 && u.messageCount === 0 && u.voiceMs === 0 && u.isClanSuda);
 
         const formatMember = (u, i) => {
             const points = u.pluses - u.minuses;
@@ -119,7 +119,7 @@ module.exports = {
             messages.push({
                 embeds: [new EmbedBuilder()
                     .setColor('#3498db')
-                    .setTitle('📊 LSPD Izveštaj — Aktivni (poslednjih 7 dana)')
+                    .setTitle('📊 SUD Izveštaj — Aktivni (poslednjih 7 dana)')
                     .setDescription('Nema aktivnih korisnika u poslednjih 7 dana.')
                     .setTimestamp()
                 ]
@@ -131,21 +131,21 @@ module.exports = {
                 const end = Math.min(i + MAX_PER_MSG, withActivity.length);
                 const embed = new EmbedBuilder()
                     .setColor('#3498db')
-                    .setTitle(`🏆 LSPD Izveštaj — Aktivni (${start}–${end} od ${withActivity.length})`)
+                    .setTitle(`🏆 SUD Izveštaj — Aktivni (${start}–${end} od ${withActivity.length})`)
                     .setDescription(chunk.map((u, idx) => formatMember(u, i + idx)).join('\n\n'))
                     .setTimestamp();
-                if (i === 0) embed.setFooter({ text: `Ukupno ${withActivity.length} aktivnih | ${inactive.length} neaktivnih policajaca` });
+                if (i === 0) embed.setFooter({ text: `Ukupno ${withActivity.length} aktivnih | ${inactive.length} neaktivnih članova suda` });
                 messages.push({ embeds: [embed] });
             }
         }
 
-        // SEKCIJA 2: Neaktivni policajci
+        // SEKCIJA 2: Neaktivni članovi suda
         if (inactive.length > 0) {
             for (let i = 0; i < inactive.length; i += 20) {
                 const chunk = inactive.slice(i, i + 20);
                 const embed = new EmbedBuilder()
                     .setColor('#e74c3c')
-                    .setTitle(`❌ Neaktivni Policajci (${i + 1}–${Math.min(i + 20, inactive.length)} od ${inactive.length})`)
+                    .setTitle(`❌ Neaktivni članovi suda (${i + 1}–${Math.min(i + 20, inactive.length)} od ${inactive.length})`)
                     .setDescription(chunk.map(u => `• <@${u.id}> — \`${u.displayName}\``).join('\n'))
                     .setTimestamp();
                 messages.push({ embeds: [embed] });
@@ -154,8 +154,8 @@ module.exports = {
             messages.push({
                 embeds: [new EmbedBuilder()
                     .setColor('#2ecc71')
-                    .setTitle('✅ Neaktivni Policajci')
-                    .setDescription('Svi policajci su imali aktivnost u poslednjih 7 dana! 👏')
+                    .setTitle('✅ Neaktivni članovi suda')
+                    .setDescription('Svi članovi suda su imali aktivnost u poslednjih 7 dana! 👏')
                     .setTimestamp()
                 ]
             });
@@ -168,3 +168,6 @@ module.exports = {
         }
     },
 };
+
+
+

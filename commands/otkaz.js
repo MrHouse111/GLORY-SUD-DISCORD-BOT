@@ -23,21 +23,21 @@ function findUserBadge(badges, userId) {
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('otkaz')
-        .setDescription('Daje otkaz i izbacuje policajca sa servera (Samo za Načelnike)')
-        .addUserOption(o => o.setName('sluzbenik').setDescription('Policajac koji dobija otkaz').setRequired(true))
+        .setDescription('Daje otkaz i izbacuje policajca sa servera (Samo za Upravu Suda)')
+        .addUserOption(o => o.setName('clan').setDescription('�lan suda koji dobija otkaz').setRequired(true))
         .addStringOption(o => o.setName('razlog').setDescription('Razlog otkaza').setRequired(true)),
 
     async execute(interaction) {
         const hasRole = interaction.member.roles.cache.some(role =>
-            ['director', 'zamenik nacelnika'].includes(role.name.toLowerCase())
+            ['director', 'zamenik nacelnika', 'predsednik suda', 'zamenik predsednika', 'sudija'].includes(role.name.toLowerCase())
         );
         const isAdmin = interaction.member.permissions.has(PermissionFlagsBits.Administrator);
 
         if (!hasRole && !isAdmin) {
-            return interaction.reply({ content: '❌ Nemate dozvolu! Ovu komandu mogu koristiti samo načelnici.', ephemeral: true });
+            return interaction.reply({ content: '❌ Nemate dozvolu! Ovu komandu mogu koristiti samo Uprava Suda.', ephemeral: true });
         }
 
-        const targetUser = interaction.options.getUser('sluzbenik');
+        const targetUser = interaction.options.getUser('clan');
         const razlog = interaction.options.getString('razlog');
 
         const badges = loadBadges();
@@ -68,3 +68,6 @@ module.exports = {
         return interaction.reply({ embeds: [confirmEmbed], components: [row], ephemeral: true });
     }
 };
+
+
+

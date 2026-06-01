@@ -9,7 +9,7 @@ const app = express();
 const port = process.env.PORT || 10000;
 
 app.get('/', (req, res) => {
-  res.send('LSPD Discord Bot is running!');
+  res.send('SUD Discord Bot is running!');
 });
 
 app.listen(port, '0.0.0.0', () => {
@@ -94,14 +94,14 @@ client.once('ready', () => {
                         const discordUser = await client.users.fetch(duty.userId);
                         const dmEmbed = new EmbedBuilder()
                             .setColor('#ff9900')
-                            .setTitle('⏰ LSPD — Automatska Odjava sa Dužnosti')
+                            .setTitle('⏰ SUD — Automatska Odjava sa Dužnosti')
                             .setDescription(
                                 `Vaša dužnost je automatski odjavljena jer ste bili prijavljeni **${hours}h ${minutes}m** (limit: 4 sata).\n\n` +
                                 `Ako ste i dalje na dužnosti, prijavite se ponovo u kanalu dužnosti.\n` +
                                 `Ako ste zaboravili da se odjavite, nema problema — sistem je to uradio umjesto vas. 🚔`
                             )
                             .setTimestamp()
-                            .setFooter({ text: 'LSPD Automatski Sistem' });
+                            .setFooter({ text: 'SUD Automatski Sistem' });
                         
                         await discordUser.send({ embeds: [dmEmbed] });
                     } catch (dmErr) {
@@ -122,7 +122,7 @@ client.once('ready', () => {
 
                                 const panelEmbed = new EmbedBuilder()
                                     .setColor('#0099ff')
-                                    .setTitle('👮 LSPD - Evidencija Dužnosti')
+                                    .setTitle('👮 SUD - Evidencija Dužnosti')
                                     .setDescription('Kliknite na dugme ispod da biste se prijavili ili odjavili sa dužnosti.\n\nSistem automatski beleži vaše vreme i aktivnost.')
                                     .setTimestamp();
 
@@ -146,4 +146,6 @@ client.once('ready', () => {
 });
 
 client.login(process.env.DISCORD_TOKEN);
+
+
 

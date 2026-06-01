@@ -4,7 +4,7 @@ const statsStore = require('../utils/statsStore');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('aktivnost')
-        .setDescription('Prikazuje vašu aktivnost u LSPD u poslednjih 7 dana'),
+        .setDescription('Prikazuje vašu aktivnost u SUD u poslednjih 7 dana'),
     async execute(interaction) {
         await interaction.deferReply({ ephemeral: true });
 
@@ -56,10 +56,10 @@ module.exports = {
 
         const embed = new EmbedBuilder()
             .setColor('#3498db')
-            .setTitle('📊 Vaša LSPD Aktivnost (Poslednjih 7 dana)')
+            .setTitle('📊 Vaša SUD Aktivnost (Poslednjih 7 dana)')
             .setThumbnail(interaction.user.displayAvatarURL())
             .addFields(
-                { name: 'Službenik', value: `<@${interaction.user.id}>`, inline: true },
+                { name: 'član', value: `<@${interaction.user.id}>`, inline: true },
                 { name: 'Ocena', value: `\`${pointsStr}\``, inline: true },
                 { name: '\u200b', value: '\u200b', inline: true },
                 { name: '⏱️ Vreme na dužnosti', value: `\`${dutyH}h ${dutyM}m\``, inline: true },
@@ -71,3 +71,5 @@ module.exports = {
         await interaction.editReply({ embeds: [embed] });
     },
 };
+
+
