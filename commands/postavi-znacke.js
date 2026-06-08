@@ -1,19 +1,20 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const { setupLeaderboard } = require('../utils/badgeLeaderboard');
+const config = require('../utils/config');
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('postavi-znacke')
-        .setDescription('Postavlja leaderboard znački u trenutni kanal (Samo za Upravu Suda)'),
+        .setDescription('Postavlja leaderboard znački u trenutni kanal'),
 
     async execute(interaction) {
         const hasRole = interaction.member.roles.cache.some(role =>
-            ['director', 'zamenik nacelnika', 'predsednik suda', 'zamenik predsednika', 'sudija'].includes(role.name.toLowerCase())
+            config.ALLOWED_ROLES.includes(role.name.toLowerCase())
         );
         const isAdmin = interaction.member.permissions.has(PermissionFlagsBits.Administrator);
 
         if (!hasRole && !isAdmin) {
-            return interaction.reply({ content: '❌ Samo Uprava Suda mogu koristiti ovu komandu!', ephemeral: true });
+            return interaction.reply({ content: '❌ Samo uprava može koristiti ovu komandu!', ephemeral: true });
         }
 
         await interaction.deferReply({ ephemeral: true });
@@ -27,6 +28,3 @@ module.exports = {
         }
     },
 };
-
-
-

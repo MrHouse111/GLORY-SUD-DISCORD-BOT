@@ -1,10 +1,11 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const statsStore = require('../utils/statsStore');
+const config = require('../utils/config');
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('aktivnost')
-        .setDescription('Prikazuje vašu aktivnost u SUD u poslednjih 7 dana'),
+        .setDescription(`Prikazuje vašu aktivnost u ${config.ORG_SHORT} u poslednjih 7 dana`),
     async execute(interaction) {
         await interaction.deferReply({ ephemeral: true });
 
@@ -56,10 +57,10 @@ module.exports = {
 
         const embed = new EmbedBuilder()
             .setColor('#3498db')
-            .setTitle('📊 Vaša SUD Aktivnost (Poslednjih 7 dana)')
+            .setTitle(`📊 Vaša ${config.ORG_SHORT} Aktivnost (Poslednjih 7 dana)`)
             .setThumbnail(interaction.user.displayAvatarURL())
             .addFields(
-                { name: 'član', value: `<@${interaction.user.id}>`, inline: true },
+                { name: 'Korisnik', value: `<@${interaction.user.id}>`, inline: true },
                 { name: 'Ocena', value: `\`${pointsStr}\``, inline: true },
                 { name: '\u200b', value: '\u200b', inline: true },
                 { name: '⏱️ Vreme na dužnosti', value: `\`${dutyH}h ${dutyM}m\``, inline: true },
@@ -71,5 +72,3 @@ module.exports = {
         await interaction.editReply({ embeds: [embed] });
     },
 };
-
-

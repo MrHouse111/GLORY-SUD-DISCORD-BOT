@@ -3,13 +3,14 @@ const fs = require('node:fs');
 const path = require('node:path');
 const express = require('express');
 const { Client, Collection, GatewayIntentBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const config = require('./utils/config');
 
 // DUMMY SERVER ZA RENDER.COM
 const app = express();
 const port = process.env.PORT || 10000;
 
 app.get('/', (req, res) => {
-  res.send('SUD Discord Bot is running!');
+  res.send(`${config.ORG_NAME} Discord Bot is running!`);
 });
 
 app.listen(port, '0.0.0.0', () => {
@@ -65,6 +66,7 @@ const CHECK_INTERVAL_MS = 5 * 60 * 1000;    // Provera svakih 5 minuta
 
 client.once('ready', () => {
     console.log(`[BOT] Ulogovan kao ${client.user.tag}`);
+    console.log(`${config.ORG_NAME} Bot is online as ${client.user.tag}!`);
     
     // Pokretanje interval provere dužnosti
     setInterval(async () => {
@@ -94,14 +96,14 @@ client.once('ready', () => {
                         const discordUser = await client.users.fetch(duty.userId);
                         const dmEmbed = new EmbedBuilder()
                             .setColor('#ff9900')
-                            .setTitle('⏰ SUD — Automatska Odjava sa Dužnosti')
+                            .setTitle(`⏰ ${config.ORG_NAME} — Automatska Odjava sa Dužnosti`)
                             .setDescription(
                                 `Vaša dužnost je automatski odjavljena jer ste bili prijavljeni **${hours}h ${minutes}m** (limit: 4 sata).\n\n` +
                                 `Ako ste i dalje na dužnosti, prijavite se ponovo u kanalu dužnosti.\n` +
-                                `Ako ste zaboravili da se odjavite, nema problema — sistem je to uradio umjesto vas. 🚔`
+                                `Ako ste zaboravili da se odjavite, nema problema — sistem je to uradio umjesto vas.`
                             )
                             .setTimestamp()
-                            .setFooter({ text: 'SUD Automatski Sistem' });
+                            .setFooter({ text: `${config.ORG_NAME} Automatski Sistem` });
                         
                         await discordUser.send({ embeds: [dmEmbed] });
                     } catch (dmErr) {
@@ -122,7 +124,7 @@ client.once('ready', () => {
 
                                 const panelEmbed = new EmbedBuilder()
                                     .setColor('#0099ff')
-                                    .setTitle('👮 SUD - Evidencija Dužnosti')
+                                    .setTitle(`👮 ${config.ORG_NAME} - Evidencija Dužnosti`)
                                     .setDescription('Kliknite na dugme ispod da biste se prijavili ili odjavili sa dužnosti.\n\nSistem automatski beleži vaše vreme i aktivnost.')
                                     .setTimestamp();
 
@@ -146,6 +148,3 @@ client.once('ready', () => {
 });
 
 client.login(process.env.DISCORD_TOKEN);
-
-
-

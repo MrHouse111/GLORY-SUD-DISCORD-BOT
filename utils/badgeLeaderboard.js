@@ -1,12 +1,10 @@
 const { EmbedBuilder } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
+const config = require('./config');
 
 const badgesFile = path.join(__dirname, '..', 'badges.json');
 const leaderboardConfigFile = path.join(__dirname, '..', 'badge_leaderboard.json');
-
-// ID kanala za značke i ormariće
-const ZNACKE_CHANNEL_ID = null; // Biće postavljeno dinamički kroz komandu
 
 function loadBadges() {
     if (!fs.existsSync(badgesFile)) fs.writeFileSync(badgesFile, JSON.stringify({}));
@@ -36,12 +34,12 @@ function buildLeaderboardEmbed(badges) {
     let description = '';
 
     if (entries.length === 0) {
-        description = '*Trenutno nema dodeljenih znački.*\n\n> Uprava Suda mogu dodeliti značke komandom `/znacka dodeli`';
+        description = `*Trenutno nema dodeljenih znački.*\n\n> Uprava može dodeliti značke komandom \`/znacka dodeli\``;
     } else {
         // Header tabele
         description += '```\n';
         description += '╔═══════╦══════════════════════════╗\n';
-        description += '║ BR.   ║ član                ║\n';
+        description += '║ BR.   ║ Korisnik                 ║\n';
         description += '╠═══════╬══════════════════════════╣\n';
         description += '```\n';
 
@@ -56,17 +54,17 @@ function buildLeaderboardEmbed(badges) {
 
     const embed = new EmbedBuilder()
         .setColor('#FFD700')
-        .setTitle('🏛️ SUD — REGISTAR ZNAČKI I ORMARIĆA')
+        .setTitle(`🏛️ ${config.ORG_NAME} — REGISTAR ZNAČKI I ORMARIĆA`)
         .setDescription(
             '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
-            '> *Službeni registar svih dodeljenih znački i ormarića\n> Los Santos Police Department*\n' +
+            `> *Službeni registar svih dodeljenih znački i ormarića\n> ${config.ORG_NAME}*\n` +
             '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n' +
             description
         )
         .addFields(
             { name: '📊 Statistika', value: `> Ukupno aktivnih znački: **${totalBadges}**\n> Sledeći slobodan broj: **#${getNextFree(badges)}**`, inline: false }
         )
-        .setFooter({ text: 'SUD Automatski Sistem • Ažurira se automatski pri svakoj promeni' })
+        .setFooter({ text: `${config.ORG_NAME} Automatski Sistem • Ažurira se automatski pri svakoj promeni` })
         .setTimestamp();
 
     return embed;
@@ -84,9 +82,9 @@ function getNextFree(badges) {
  * @param {Client} client - Discord.js Client instanca
  */
 async function updateLeaderboard(client) {
-    const config = loadLeaderboardConfig();
-    const channelId = config.channelId;
-    const messageId = config.messageId;
+    const leaderboardConfig = loadLeaderboardConfig();
+    const channelId = leaderboardConfig.channelId;
+    const messageId = leaderboardConfig.messageId;
 
     if (!channelId) {
         console.warn('[LEADERBOARD] Kanal nije konfigurisan. Koristite /postavi-znacke da postavite leaderboard.');
@@ -115,8 +113,8 @@ async function updateLeaderboard(client) {
 
         // Šalji novu poruku
         const newMsg = await channel.send({ embeds: [embed] });
-        config.messageId = newMsg.id;
-        saveLeaderboardConfig(config);
+        leaderboardConfig.messageId = newMsg.id;
+        saveLeaderboardConfig(leaderboardConfig);
         console.log('[LEADERBOARD] Novi leaderboard postavljen, ID:', newMsg.id);
 
     } catch (err) {
@@ -135,11 +133,11 @@ async function setupLeaderboard(channel, client) {
 
     const msg = await channel.send({ embeds: [embed] });
 
-    const config = {
+    const leaderboardConfig = {
         channelId: channel.id,
         messageId: msg.id
     };
-    saveLeaderboardConfig(config);
+    saveLeaderboardConfig(leaderboardConfig);
 
     console.log(`[LEADERBOARD] Postavljen u kanal ${channel.name} (${channel.id}), poruka: ${msg.id}`);
     return msg;
@@ -152,5 +150,3 @@ module.exports = {
     loadLeaderboardConfig,
     saveLeaderboardConfig
 };
-
-

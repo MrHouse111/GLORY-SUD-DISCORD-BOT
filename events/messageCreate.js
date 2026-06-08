@@ -1,5 +1,6 @@
 const { Events, EmbedBuilder } = require('discord.js');
 const statsStore = require('../utils/statsStore');
+const config = require('../utils/config');
 
 // Jednostavna crna lista (ovo se može proširiti po potrebi)
 const forbiddenWords = ['jebem', 'kurac', 'sranje', 'pizda', 'picka', 'govno'];
@@ -20,8 +21,8 @@ module.exports = {
         // --- STICKY LEADERBOARD LOGIKA ---
         try {
             const { loadLeaderboardConfig, updateLeaderboard } = require('../utils/badgeLeaderboard');
-            const config = loadLeaderboardConfig();
-            if (config && config.channelId === message.channel.id) {
+            const leaderboardConfig = loadLeaderboardConfig();
+            if (leaderboardConfig && leaderboardConfig.channelId === message.channel.id) {
                 // Ako neko pise u leaderboard kanalu, pomeri leaderboard na dno
                 updateLeaderboard(message.client);
             }
@@ -37,8 +38,8 @@ module.exports = {
             // --- EMBED 1: Uvod + Setup komande ---
             const embed1 = new EmbedBuilder()
                 .setColor('#1a5276')
-                .setTitle('📘 SUD Support System — User Manual')
-                .setDescription('Kompletno uputstvo za korišćenje SUD Discord Bota.\\nBot radi **24/7** na cloud serveru. Svi podaci se čuvaju u Firebase bazi.')
+                .setTitle(`📘 ${config.ORG_NAME} Support System — User Manual`)
+                .setDescription(`Kompletno uputstvo za korišćenje ${config.ORG_NAME} Discord Bota.\nBot radi **24/7** na cloud serveru. Svi podaci se čuvaju u Firebase bazi.`)
                 .addFields(
                     {
                         name: '⚙️ Setup Komande (Samo za Admine — koriste se JEDNOM)',
@@ -48,7 +49,7 @@ module.exports = {
                             '`/setup-licne-karte` — Postavlja panel za kreiranje ličnih karata.',
                             '`/setup-tiketi` — Postavlja panel za otvaranje tiketa (podrška).',
                             '`/setup-odsustvo` — Postavlja panel za prijavu odsustva.',
-                        ].join('\\n')
+                        ].join('\n')
                     },
                 )
                 .setFooter({ text: 'Stranica 1/4 — Setup komande' });
@@ -65,17 +66,17 @@ module.exports = {
                             '🔴 **Odjava sa dužnosti** — Klikni dugme, bot prikazuje koliko si bio na dužnosti.',
                             '',
                             'Panel se automatski premešta na dno kanala.',
-                        ].join('\\n')
+                        ].join('\n')
                     },
                     {
                         name: '🪪 Kreiranje Lične Karte',
                         value: [
                             '1. Klikni dugme **🪪 Kreiraj Ličnu Kartu**.',
                             '2. Popuni formu: Ime i Prezime, UUID, Steam ime.',
-                            '3. Bot kreira embed ličnu kartu i dodeljuje ti rolu **član suda**.',
+                            `3. Bot kreira embed ličnu kartu i dodeljuje ti rolu **${config.MEMBER_ROLE}**.`,
                             '',
                             'Panel se automatski premešta na dno kanala.',
-                        ].join('\\n')
+                        ].join('\n')
                     }
                 )
                 .setFooter({ text: 'Stranica 2/4 — Dužnost & Lične Karte' });
@@ -86,21 +87,21 @@ module.exports = {
                 .setTitle('🏅 Značke & ✅ Plus / ⚠️ Minus / 🛑 Otkaz')
                 .addFields(
                     {
-                        name: '🏅 Značke (Samo Uprava Suda)',
+                        name: '🏅 Značke (Samo za Upravu)',
                         value: [
                             '`/znacka @korisnik` — Dodeljuje sledeći slobodan broj značke.',
                             '`/izmeni-znacku @korisnik [broj]` — Ručno menja broj značke.',
-                        ].join('\\n')
+                        ].join('\n')
                     },
                     {
-                        name: '✅⚠️🛑 Disciplinski Sistem (Samo Uprava Suda)',
+                        name: '✅⚠️🛑 Disciplinski Sistem (Samo za Upravu)',
                         value: [
                             '`/plus @korisnik [razlog]` — Pohvala članu.',
                             '`/minus @korisnik [razlog]` — Opomena članu.',
                             '`/otkaz @korisnik [razlog]` — Raskid ugovora.',
                             '',
                             'Sve se beleži u bazu i prikazuje u izveštaju!',
-                        ].join('\\n')
+                        ].join('\n')
                     },
                 )
                 .setFooter({ text: 'Stranica 3/4 — Značke & Disciplina' });
@@ -111,12 +112,12 @@ module.exports = {
                 .setTitle('📊 Izveštaj & 🎫 Tiketi & 📄 Odsustvo')
                 .addFields(
                     {
-                        name: '📊 Nedeljni Izveštaj (Samo Uprava Suda)',
+                        name: '📊 Nedeljni Izveštaj (Samo za Upravu)',
                         value: [
                             '`/izvestaj` — Generiše pregled aktivnosti cele ekipe za 7 dana.',
                             '🏆 Najaktivniji | ⚠️ Najmanje aktivni | 👻 Neaktivni',
                             'Prikazuje: poruke, voice vreme, pluseve i minuse.',
-                        ].join('\\n')
+                        ].join('\n')
                     },
                     {
                         name: '🎙️ Voice Praćenje',
@@ -124,7 +125,7 @@ module.exports = {
                     },
                     {
                         name: '🎫 Tiketi',
-                        value: 'Klikni **📩 Otvori Tiket** — Bot kreira privatni kanal za komunikaciju sa Uprava Sudama.'
+                        value: `Klikni **📩 Otvori Tiket** — Bot kreira privatni kanal za komunikaciju sa Upravom.`
                     },
                     {
                         name: '📄 Odsustvo',
@@ -133,13 +134,13 @@ module.exports = {
                     {
                         name: '🔐 Ko šta može',
                         value: [
-                            '**Svi članovi:** Dužnost, Lična karta, Tiketi, Odsustvo',
-                            '**Uprava Suda (Director/Zamenik):** Značke, Plus/Minus/Otkaz, Izveštaj',
+                            `**Svi članovi:** Dužnost, Lična karta, Tiketi, Odsustvo`,
+                            `**Uprava:** Značke, Plus/Minus/Otkaz, Izveštaj`,
                             '**Administratori:** Setup komande + sve ostalo',
-                        ].join('\\n')
+                        ].join('\n')
                     }
                 )
-                .setFooter({ text: 'Stranica 4/4 — SUD Support System v2.0' })
+                .setFooter({ text: `Stranica 4/4 — ${config.ORG_NAME} Support System` })
                 .setTimestamp();
 
             embeds.push(embed1, embed2, embed3, embed4);
@@ -155,114 +156,6 @@ module.exports = {
         // --- PRAĆENJE PORUKA U BAZI ---
         statsStore.addMessage(message.author.id, message.author.username);
 
-        // --- MODERACIJA UGAŠENA (čeka odobrenje Predsednik Sudaa) ---
-        /*
-        const content = message.content.toLowerCase();
-
-        // --- 1. FILTER PSOVKI ---
-        const containsForbidden = forbiddenWords.some(word => content.includes(word));
-        if (containsForbidden) {
-            try {
-                await message.delete();
-                
-                let censoredContent = message.content;
-                forbiddenWords.forEach(word => {
-                    const regex = new RegExp(word, 'gi');
-                    censoredContent = censoredContent.replace(regex, '*'.repeat(word.length));
-                });
-
-                await message.channel.send(`**Cenzurisano | ${message.author.username}:** ${censoredContent}`);
-
-                let warnings = warningsMap.get(message.author.id) || { count: 0, lastWarning: 0 };
-                const now = Date.now();
-                
-                if (now - warnings.lastWarning > 3600000) {
-                    warnings.count = 0;
-                }
-
-                warnings.count += 1;
-                warnings.lastWarning = now;
-                warningsMap.set(message.author.id, warnings);
-
-                if (warnings.count >= 3) {
-                    try {
-                        await message.member.timeout(15 * 60 * 1000, "3 upozorenja zbog psovki");
-                        await message.channel.send(`🛑 <@${message.author.id}> je mutiran na 15 minuta zbog ponavljanja psovki (3 upozorenja).`);
-                        warningsMap.delete(message.author.id);
-                    } catch (err) {
-                        console.log('Greska pri mutiranju (verovatno nedostatak permisija):', err);
-                        await message.channel.send(`⚠️ <@${message.author.id}> je dostigao 3 upozorenja, ali bot nema dozvolu za mutiranje (Timeout).`);
-                        warnings.count = 0;
-                        warningsMap.set(message.author.id, warnings);
-                    }
-                } else {
-                    const warningMsg = await message.channel.send(`⚠️ <@${message.author.id}>, pazite na rečnik! Imate ${warnings.count}/3 upozorenja.`);
-                    setTimeout(() => {
-                        warningMsg.delete().catch(() => {});
-                    }, 5000);
-                }
-            } catch (error) {
-                console.log('Greška pri obradi psovki:', error);
-            }
-            return;
-        }
-
-        // --- 2. ANTI-SPAM SISTEM ---
-        const now = Date.now();
-        const userTimestamps = spamMap.get(message.author.id) || [];
-        
-        const recentTimestamps = userTimestamps.filter(timestamp => now - timestamp < SPAM_TIME);
-        recentTimestamps.push(now);
-
-        spamMap.set(message.author.id, recentTimestamps);
-
-        if (recentTimestamps.length >= SPAM_LIMIT) {
-            try {
-                await message.delete();
-                
-                const warningMsg = await message.channel.send(`🛑 <@${message.author.id}>, prekinite sa spamovanjem kanala!`);
-                
-                spamMap.delete(message.author.id);
-
-                setTimeout(() => {
-                    warningMsg.delete().catch(() => {});
-                }, 5000);
-            } catch (error) {
-                console.log('Greška pri brisanju spam poruke:', error);
-            }
-        }
-        */
-
-        // --- 3. AI DISPEČER (Privremeno ugašeno) ---
-        /*
-        if (message.mentions.has(message.client.user)) {
-            const aiPrompt = message.content.replace(`<@${message.client.user.id}>`, '').trim();
-            if (aiPrompt.length > 0) {
-                try {
-                    await message.channel.sendTyping();
-                    const { GoogleGenerativeAI } = require('@google/generative-ai');
-                    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-                    const model = genAI.getGenerativeModel({ 
-                        model: "gemini-1.5-flash",
-                        systemInstruction: "Ti si profesionalni SUD dispečer na roleplay serveru. Tvoje ime je SUD Bot. Odgovaraj kratko, jasno, uvek profesionalno i u duhu policijskog roleplay-a. Pomaži građanima i kolegama članovi sudama dajući savete i kratke odgovore. Zadrži roleplay karakter u svakom trenutku. Koristi policijske kodove kada je prikladno (npr. 10-4 za potvrdu)."
-                    });
-                    
-                    const result = await model.generateContent(aiPrompt);
-                    let responseText = result.response.text();
-                    
-                    // Discord ima limit od 2000 karaktera po poruci
-                    if (responseText.length > 2000) {
-                        responseText = responseText.substring(0, 1997) + '...';
-                    }
-                    
-                    await message.reply(responseText);
-                } catch (error) {
-                    console.error("Gemini API Error:", error);
-                    await message.reply("Trenutno imam smetnje na vezi. Molim pokušajte ponovo kasnije.");
-                }
-            }
-        }
-        */
         // --- 4. AUTO-LICNE KARTE SISTEM ---
         // Ako poruka sadrži format lične karte, prebaci u Embed i daj rolu
         const cleanMessage = message.content.replace(/\*\*/g, '');
@@ -278,10 +171,10 @@ module.exports = {
 
                 const idEmbed = new EmbedBuilder()
                     .setColor('#0099ff')
-                    .setTitle('👮 SUD Lična Karta')
+                    .setTitle(`👮 ${config.ORG_NAME} Lična Karta`)
                     .setThumbnail(message.author.displayAvatarURL())
                     .addFields(
-                        { name: 'član', value: `<@${message.author.id}>`, inline: false },
+                        { name: 'Korisnik', value: `<@${message.author.id}>`, inline: false },
                         { name: 'Ime na ličnoj', value: imeNaLicnoj, inline: true },
                         { name: 'Ime na Steam-u', value: imeNaSteam, inline: true },
                         { name: 'UUID', value: uuid, inline: true }
@@ -289,8 +182,8 @@ module.exports = {
                     .setFooter({ text: 'Automatski kreirana evidencija' })
                     .setTimestamp();
 
-                // Dodavanje role 'član suda'
-                const clanSudaRole = message.guild.roles.cache.find(r => r.name.toLowerCase() === 'član suda');
+                // Dodavanje role
+                const clanSudaRole = message.guild.roles.cache.find(r => r.name.toLowerCase() === config.MEMBER_ROLE);
                 if (clanSudaRole) {
                     await message.member.roles.add(clanSudaRole).catch(console.error);
                 }
@@ -306,5 +199,3 @@ module.exports = {
         }
     },
 };
-
-

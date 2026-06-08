@@ -1,10 +1,11 @@
 const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } = require('discord.js');
 const statsStore = require('../utils/statsStore');
+const config = require('../utils/config');
 
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('plus')
-		.setDescription('Dodeljuje plus (+) članu (Samo za Upravu Suda)')
+		.setDescription('Dodeljuje plus (+) članu')
         .addUserOption(option => 
             option.setName('clan')
                 .setDescription('član kom se dodeljuje plus')
@@ -14,11 +15,11 @@ module.exports = {
                 .setDescription('Razlog dodeljivanja plusa')
                 .setRequired(true)),
 	async execute(interaction) {
-        const hasRole = interaction.member.roles.cache.some(role => ['director', 'zamenik nacelnika', 'predsednik suda', 'zamenik predsednika', 'sudija'].includes(role.name.toLowerCase()));
+        const hasRole = interaction.member.roles.cache.some(role => config.ALLOWED_ROLES.includes(role.name.toLowerCase()));
         const isAdmin = interaction.member.permissions.has(PermissionFlagsBits.Administrator);
         
         if (!hasRole && !isAdmin) {
-            return interaction.reply({ content: '❌ Nemate dozvolu! Ovu komandu mogu koristiti samo Uprava Suda.', ephemeral: true });
+            return interaction.reply({ content: '❌ Nemate dozvolu! Ovu komandu mogu koristiti samo članovi uprave.', ephemeral: true });
         }
 
         const targetUser = interaction.options.getUser('clan');
@@ -28,10 +29,10 @@ module.exports = {
 
 		const embed = new EmbedBuilder()
 			.setColor('#00ff00')
-			.setTitle('✅ SUD | Novi Plus')
+			.setTitle(`✅ ${config.ORG_NAME} | Novi Plus`)
             .setThumbnail(targetUser.displayAvatarURL())
             .addFields(
-                { name: 'član:', value: `<@${targetUser.id}>`, inline: true },
+                { name: 'Korisnik:', value: `<@${targetUser.id}>`, inline: true },
                 { name: 'Dodelio:', value: `<@${interaction.user.id}>`, inline: true },
                 { name: 'Razlog:', value: razlog, inline: false }
             )
@@ -40,6 +41,3 @@ module.exports = {
 		await interaction.reply({ embeds: [embed] });
 	},
 };
-
-
-

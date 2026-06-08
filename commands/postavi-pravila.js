@@ -1,20 +1,21 @@
 const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } = require('discord.js');
+const config = require('../utils/config');
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('postavi-pravila')
-        .setDescription('Postavlja panel sa pravilima SUD-a u trenutni kanal.'),
+        .setDescription('Postavlja panel sa pravilnikom u trenutni kanal.'),
     async execute(interaction) {
         if (!interaction.member) return interaction.reply({ content: '❌ Ove komande se mogu koristiti isključivo na serveru, a ne u privatnim porukama!', ephemeral: true });
-        const hasRole = interaction.member.roles.cache.some(role => ['director', 'zamenik nacelnika', 'predsednik suda', 'zamenik predsednika', 'sudija'].includes(role.name.toLowerCase()));
+        const hasRole = interaction.member.roles.cache.some(role => config.ALLOWED_ROLES.includes(role.name.toLowerCase()));
         const isAdmin = interaction.member.permissions.has(PermissionFlagsBits.Administrator);
         if (!hasRole && !isAdmin) {
-            return interaction.reply({ content: '❌ Samo Uprava Suda i Administratori mogu koristiti ovu komandu!', ephemeral: true });
+            return interaction.reply({ content: '❌ Samo uprava i administratori mogu koristiti ovu komandu!', ephemeral: true });
         }
         const embed = new EmbedBuilder()
             .setColor('#1a5276') 
-            .setTitle('SUD - Zvanični Pravilnik i Propisi')
-            .setDescription('Svi članovi Los Santos Police Department-a su u obavezi da se strogo pridržavaju sledećih pravila. Nepoštovanje istih rezultiraće disciplinskim merama, suspenzijama ili trajnim udaljavanjem iz službe (Blacklist).')
+            .setTitle(`${config.ORG_NAME} - Zvanični Pravilnik i Propisi`)
+            .setDescription(`Svi članovi ${config.ORG_NAME} organizacije su u obavezi da se strogo pridržavaju sledećih pravila. Nepoštovanje istih rezultiraće disciplinskim merama, suspenzijama ili trajnim udaljavanjem iz službe.`)
             .addFields(
                 { 
                     name: '1. Aktivnost i Dužnost', 
@@ -22,24 +23,21 @@ module.exports = {
                 },
                 { 
                     name: '2. Lanac Komande i Ponašanje', 
-                    value: '• **Hijerarhija:** Strogo poštovanje viših činova (High Command). Nepoštovanje donosi disciplinski minus.\n• **Kolegijalnost:** Vređanje ili neprofesionalno ponašanje prema kolegama kažnjava se momentalnim otkazom.\n• **Intervencije:** Zahteva se maksimalan profesionalizam i fokus na visoko-rizičnim akcijama (npr. Zlatara).' 
+                    value: '• **Hijerarhija:** Strogo poštovanje viših činova (Uprava). Nepoštovanje donosi disciplinski minus.\n• **Kolegijalnost:** Vređanje ili neprofesionalno ponašanje prema kolegama kažnjava se momentalnim otkazom.\n• **Intervencije:** Zahteva se maksimalan profesionalizam i fokus tokom radnih aktivnosti.' 
                 },
                 { 
                     name: '3. Radio Veza i Komunikacija', 
-                    value: '• **Identifikacija:** Na radiju je strogo zabranjeno oslovljavanje po imenu, isključivo po broju značke.\n• **Prisutnost:** Tokom boravka u gradu (In-Game), član mora biti na radiju ili u zvaničnom voice kanalu. Ignorisanje ovog pravila znači otkaz i Blacklist.\n• **Oslovljavanje:** Obavezno je korišćenje zvaničnih prefiksa ("šef-"). Nepoštovanje donosi Blacklist.' 
+                    value: '• **Identifikacija:** Na radiju je strogo zabranjeno oslovljavanje po imenu, isključivo po broju značke.\n• **Prisutnost:** Tokom boravka u gradu (In-Game), član mora biti na radiju ili u zvaničnom voice kanalu. Ignorisanje ovog pravila znači otkaz.\n• **Oslovljavanje:** Obavezno je korišćenje zvaničnih prefiksa. Nepoštovanje donosi disciplinske mere.' 
                 },
                 { 
                     name: '4. Operacije i Rešavanje Konflikata', 
-                    value: '• **Racije:** Nepripremljenost do trenutka početka racije donosi zabranu učešća u istoj i disciplinski minus.\n• **Konflikti:** Svaki nesporazum sa drugom policijskom upravom ili organizacijom rešava se isključivo otvaranjem Tiketa na Discordu ili pozivanjem administracije (Report).' 
+                    value: '• **Konflikti:** Svaki nesporazum sa drugom upravom ili organizacijom rešava se isključivo otvaranjem Tiketa na Discordu ili pozivanjem administracije.' 
                 }
             )
             .setTimestamp()
-            .setFooter({ text: 'SUD High Command | Odeljenje za Unutrašnju Kontrolu' });
+            .setFooter({ text: `${config.ORG_NAME} Uprava | Odeljenje za Unutrašnju Kontrolu` });
 
         await interaction.channel.send({ embeds: [embed] });
         await interaction.reply({ content: 'Panel je uspešno postavljen. NAPOMENA: Ova komanda se koristi isključivo jednokratno prilikom postavljanja panela.', ephemeral: true });
     },
 };
-
-
-

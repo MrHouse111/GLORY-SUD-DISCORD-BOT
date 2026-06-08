@@ -1,9 +1,10 @@
 const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } = require('discord.js');
+const config = require('../utils/config');
 
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('migrate-licne-karte')
-		.setDescription('Pretvara sve stare obične poruke u ovom kanalu u SUD Lične Karte (Samo za admine)')
+		.setDescription(`Pretvara sve stare obične poruke u ovom kanalu u ${config.ORG_SHORT} Lične Karte (Samo za admine)`)
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 	async execute(interaction) {
         await interaction.deferReply({ ephemeral: true });
@@ -40,10 +41,10 @@ module.exports = {
 
                 const idEmbed = new EmbedBuilder()
                     .setColor('#0099ff')
-                    .setTitle('👮 SUD Lična Karta')
+                    .setTitle(`👮 ${config.ORG_NAME} Lična Karta`)
                     .setThumbnail(msg.author.displayAvatarURL())
                     .addFields(
-                        { name: 'član', value: `<@${msg.author.id}>`, inline: false },
+                        { name: 'Korisnik', value: `<@${msg.author.id}>`, inline: false },
                         { name: 'Ime na ličnoj', value: imeNaLicnoj, inline: true },
                         { name: 'Ime na Steam-u', value: imeNaSteam, inline: true },
                         { name: 'UUID', value: uuid, inline: true }
@@ -66,5 +67,3 @@ module.exports = {
         }
 	},
 };
-
-

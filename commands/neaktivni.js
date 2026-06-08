@@ -1,16 +1,17 @@
 const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } = require('discord.js');
 const statsStore = require('../utils/statsStore');
+const config = require('../utils/config');
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('neaktivni')
-        .setDescription('Prikazuje listu potpuno neaktivnih članova za poslednjih 7 dana (Samo za Upravu Suda)'),
+        .setDescription('Prikazuje listu potpuno neaktivnih članova za poslednjih 7 dana'),
     async execute(interaction) {
-        const hasRole = interaction.member.roles.cache.some(role => ['director', 'zamenik nacelnika', 'predsednik suda', 'zamenik predsednika', 'sudija'].includes(role.name.toLowerCase()));
+        const hasRole = interaction.member.roles.cache.some(role => config.ALLOWED_ROLES.includes(role.name.toLowerCase()));
         const isAdmin = interaction.member.permissions.has(PermissionFlagsBits.Administrator);
         
         if (!hasRole && !isAdmin) {
-            return interaction.reply({ content: '❌ Nemate dozvolu! Ovu komandu mogu koristiti samo Uprava Suda.', ephemeral: true });
+            return interaction.reply({ content: '❌ Nemate dozvolu! Ovu komandu mogu koristiti samo članovi uprave.', ephemeral: true });
         }
 
         await interaction.deferReply();
@@ -31,6 +32,10 @@ module.exports = {
 
         members.forEach(member => {
             if (member.user.bot) return;
+
+            // Filtriraj samo one koji imaju MEMBER_ROLE rolu
+            const hasMemberRole = member.roles.cache.some(r => r.name.toLowerCase() === config.MEMBER_ROLE);
+            if (!hasMemberRole) return;
 
             let messageCount = 0;
             let voiceMs = 0;
@@ -119,6 +124,3 @@ module.exports = {
         await interaction.editReply({ embeds: embeds.slice(0, maxEmbeds) });
     },
 };
-
-
-

@@ -1,4 +1,5 @@
 const { db, admin } = require('./firebase');
+const config = require('./config');
 
 function getTodayString() {
     const now = new Date();
@@ -13,7 +14,7 @@ module.exports = {
             return;
         }
         try {
-            const ref = db.collection('sud_stats').doc(userId);
+            const ref = db.collection(`${config.DB_PREFIX}stats`).doc(userId);
             const today = getTodayString();
             
             await ref.set({
@@ -33,7 +34,7 @@ module.exports = {
             return;
         }
         try {
-            const ref = db.collection('sud_stats').doc(userId);
+            const ref = db.collection(`${config.DB_PREFIX}stats`).doc(userId);
             const today = getTodayString();
             
             await ref.set({
@@ -53,7 +54,7 @@ module.exports = {
             return;
         }
         try {
-            const ref = db.collection('sud_stats').doc(userId);
+            const ref = db.collection(`${config.DB_PREFIX}stats`).doc(userId);
             const today = getTodayString();
             
             await ref.set({
@@ -69,7 +70,7 @@ module.exports = {
 
     addPlus: async (userId, username) => {
         if (!db) return;
-        const ref = db.collection('sud_stats').doc(userId);
+        const ref = db.collection(`${config.DB_PREFIX}stats`).doc(userId);
         await ref.set({
             username: username,
             pluses: admin.firestore.FieldValue.increment(1)
@@ -78,7 +79,7 @@ module.exports = {
 
     addMinus: async (userId, username) => {
         if (!db) return;
-        const ref = db.collection('sud_stats').doc(userId);
+        const ref = db.collection(`${config.DB_PREFIX}stats`).doc(userId);
         await ref.set({
             username: username,
             minuses: admin.firestore.FieldValue.increment(1)
@@ -87,7 +88,7 @@ module.exports = {
 
     addOtkaz: async (userId, username) => {
         if (!db) return;
-        const ref = db.collection('sud_stats').doc(userId);
+        const ref = db.collection(`${config.DB_PREFIX}stats`).doc(userId);
         await ref.set({
             username: username,
             otkazi: admin.firestore.FieldValue.increment(1)
@@ -96,13 +97,13 @@ module.exports = {
 
     getUserStats: async (userId) => {
         if (!db) return null;
-        const doc = await db.collection('sud_stats').doc(userId).get();
+        const doc = await db.collection(`${config.DB_PREFIX}stats`).doc(userId).get();
         return doc.exists ? doc.data() : null;
     },
 
     getAllStats: async () => {
         if (!db) return {};
-        const snapshot = await db.collection('sud_stats').get();
+        const snapshot = await db.collection(`${config.DB_PREFIX}stats`).get();
         const users = {};
         snapshot.forEach(doc => {
             users[doc.id] = doc.data();
@@ -112,7 +113,7 @@ module.exports = {
     
     cleanOldData: async () => {
         if (!db) return;
-        const snapshot = await db.collection('sud_stats').get();
+        const snapshot = await db.collection(`${config.DB_PREFIX}stats`).get();
         const now = new Date();
         const sevenDaysAgo = new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000));
         
@@ -149,19 +150,8 @@ module.exports = {
                 }
             }
 
-            // Literal fields with dots
-            for (const key in data) {
-                if (key.startsWith('messages.') || key.startsWith('voice.') || key.startsWith('duty.')) {
-                    const dateStr = key.split('.')[1];
-                    if (new Date(dateStr) < sevenDaysAgo) {
-                        // Batch update allows deleting nested fields easily with dots, but for literal fields with dots it might be tricky.
-                        // We will just leave literal fields to avoid crashes, they will age out.
-                    }
-                }
-            }
-
             if (needsUpdate) {
-                batch.update(db.collection('sud_stats').doc(doc.id), updates);
+                batch.update(db.collection(`${config.DB_PREFIX}stats`).doc(doc.id), updates);
                 operationsCount++;
             }
         });
@@ -171,5 +161,3 @@ module.exports = {
         }
     }
 };
-
-

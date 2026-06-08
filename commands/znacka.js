@@ -1,7 +1,8 @@
-const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
 const { updateLeaderboard } = require('../utils/badgeLeaderboard');
+const config = require('../utils/config');
 
 const badgesFile = path.join(__dirname, '../badges.json');
 
@@ -30,7 +31,22 @@ function findUserBadge(badges, userId) {
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('znacka')
-        .setDescription('Upravljanje značkama �lanova suda (Samo za Upravu Suda)')
+        .setDescription(`Upravljanje značkama članova (Samo za Upravu)`),
+    
+    // Generišemo subkomande
+    // Ovde koristimo standardni Builder metod
+    // Ali za slash command definiciju to radimo jednom.
+    async execute(interaction) {
+        // Build subcommands data dynamically or statically. 
+        // Data is statically defined at require time, but we can configure the execute descriptions inside command.
+    },
+};
+
+// Da bismo izbegli grešku kod ponovnog učitavanja data, definišemo je statički sa dinamičkim opisom
+module.exports = {
+    data: new SlashCommandBuilder()
+        .setName('znacka')
+        .setDescription(`Upravljanje značkama članova`)
         .addSubcommand(sub =>
             sub.setName('dodeli')
                 .setDescription('Dodeljuje značku korisniku')
@@ -39,7 +55,7 @@ module.exports = {
         )
         .addSubcommand(sub =>
             sub.setName('ukloni')
-                .setDescription('Uklanja značku korisniku (bez kicka)')
+                .setDescription('Uklanja značku korisniku')
                 .addUserOption(o => o.setName('korisnik').setDescription('Korisnik').setRequired(true))
         )
         .addSubcommand(sub =>
@@ -59,12 +75,12 @@ module.exports = {
         const badges = loadBadges();
         
         const hasRole = interaction.member.roles.cache.some(role =>
-            ['director', 'zamenik nacelnika', 'Predsednik Suda', 'nacelnik', 'predsednik suda', 'zamenik predsednika', 'sudija'].includes(role.name.toLowerCase())
+            config.ALLOWED_ROLES.includes(role.name.toLowerCase())
         );
         const isAdmin = interaction.member.permissions.has(PermissionFlagsBits.Administrator);
 
         if (sub === 'dodeli') {
-            if (!hasRole && !isAdmin) return interaction.reply({ content: '❌ Samo Uprava Suda mogu dodeliti značku!', ephemeral: true });
+            if (!hasRole && !isAdmin) return interaction.reply({ content: '❌ Samo uprava može dodeliti značku!', ephemeral: true });
 
             const targetUser = interaction.options.getUser('korisnik');
             const requestedNum = interaction.options.getInteger('broj');
@@ -95,8 +111,8 @@ module.exports = {
             try {
                 const dmEmbed = new EmbedBuilder()
                     .setColor('#FFD700')
-                    .setTitle('👮 SUD — Dodela Značke')
-                    .setDescription(`Čestitamo! Dodeljen vam je broj značke i ormarića.\n\n🪪 **Vaš broj značke:** \`#${badgeNum}\`\n🗄️ **Vaš ormarić broj:** \`${badgeNum}\`\n\n*Sačuvajte ovaj broj — to je vaš identifikator u stanici.*`)
+                    .setTitle(`👮 ${config.ORG_NAME} — Dodela Značke`)
+                    .setDescription(`Čestitamo! Dodeljen vam je broj značke i ormarića.\n\n🪪 **Vaš broj značke:** \`#${badgeNum}\`\n🗄️ **Vaš ormarić broj:** \`${badgeNum}\`\n\n*Sačuvajte ovaj broj — to je vaš identifikator u organizaciji.*`)
                     .setTimestamp();
                 await targetUser.send({ embeds: [dmEmbed] });
             } catch (e) {
@@ -105,9 +121,9 @@ module.exports = {
 
             const embed = new EmbedBuilder()
                 .setColor('#FFD700')
-                .setTitle('👮 SUD — Značka Dodeljena')
+                .setTitle(`👮 ${config.ORG_NAME} — Značka Dodeljena`)
                 .addFields(
-                    { name: '�lan suda', value: `<@${targetUser.id}>`, inline: true },
+                    { name: 'Korisnik', value: `<@${targetUser.id}>`, inline: true },
                     { name: 'Broj Značke', value: `**#${badgeNum}**`, inline: true },
                     { name: 'Sledeći slobodan', value: `#${nextFreeBadge(loadBadges())}`, inline: true }
                 )
@@ -118,7 +134,7 @@ module.exports = {
         }
 
         if (sub === 'ukloni') {
-            if (!hasRole && !isAdmin) return interaction.reply({ content: '❌ Samo Uprava Suda mogu ukloniti značku!', ephemeral: true });
+            if (!hasRole && !isAdmin) return interaction.reply({ content: '❌ Samo uprava može ukloniti značku!', ephemeral: true });
 
             const targetUser = interaction.options.getUser('korisnik');
             const existing = findUserBadge(badges, targetUser.id);
@@ -144,7 +160,7 @@ module.exports = {
         }
 
         if (sub === 'izmeni') {
-            if (!hasRole && !isAdmin) return interaction.reply({ content: '❌ Samo Uprava Suda mogu izmeniti značku!', ephemeral: true });
+            if (!hasRole && !isAdmin) return interaction.reply({ content: '❌ Samo uprava može izmeniti značku!', ephemeral: true });
 
             const targetUser = interaction.options.getUser('korisnik');
             const newNum = interaction.options.getInteger('novi_broj');
@@ -168,7 +184,7 @@ module.exports = {
             try {
                 const dmEmbed = new EmbedBuilder()
                     .setColor('#FFD700')
-                    .setTitle('👮 SUD — Nova Značka')
+                    .setTitle(`👮 ${config.ORG_NAME} — Nova Značka`)
                     .setDescription(`Vaš broj značke i ormarića je izmenjen!\n\n🪪 **Vaš novi broj značke:** \`#${newNum}\`\n🗄️ **Vaš novi ormarić:** \`${newNum}\`\n\n*Stari broj #${existing} više nije važeći.*`)
                     .setTimestamp();
                 await targetUser.send({ embeds: [dmEmbed] });
@@ -199,7 +215,7 @@ module.exports = {
                     .setColor('#FFD700')
                     .setTitle('🪪 Informacije o Značci')
                     .addFields(
-                        { name: '�lan suda', value: `<@${targetUser.id}>`, inline: true },
+                        { name: 'Korisnik', value: `<@${targetUser.id}>`, inline: true },
                         { name: 'Broj Značke', value: `**#${existing}**`, inline: true }
                     )
                     .setThumbnail(targetUser.displayAvatarURL())
@@ -210,5 +226,3 @@ module.exports = {
         }
     }
 };
-
-

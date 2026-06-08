@@ -1,12 +1,12 @@
 const { Events } = require('discord.js');
-
+const config = require('../utils/config');
 const voiceStateUpdate = require('./voiceStateUpdate');
 
 module.exports = {
 	name: Events.ClientReady,
 	once: true,
 	execute(client) {
-		console.log(`SUD Bot is online as ${client.user.tag}!`);
+		console.log(`${config.ORG_NAME} Bot is online as ${client.user.tag}!`);
 
 		// Inicijalizuj ljude koji su već u voice kanalu pre nego što se bot upalio (ili posle restarta)
 		let voiceCount = 0;
@@ -25,5 +25,3 @@ module.exports = {
 		console.log(`[VOICE] Inicijalizovano ${voiceCount} aktivnih voice sesija nakon restarta bota.`);
 	},
 };
-
-

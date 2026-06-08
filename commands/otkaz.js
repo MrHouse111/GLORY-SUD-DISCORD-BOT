@@ -1,16 +1,13 @@
 const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
+const config = require('../utils/config');
 
 const badgesFile = path.join(__dirname, '../badges.json');
 
 function loadBadges() {
     if (!fs.existsSync(badgesFile)) fs.writeFileSync(badgesFile, JSON.stringify({}));
     return JSON.parse(fs.readFileSync(badgesFile));
-}
-
-function saveBadges(data) {
-    fs.writeFileSync(badgesFile, JSON.stringify(data, null, 2));
 }
 
 function findUserBadge(badges, userId) {
@@ -23,18 +20,18 @@ function findUserBadge(badges, userId) {
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('otkaz')
-        .setDescription('Daje otkaz i izbacuje policajca sa servera (Samo za Upravu Suda)')
-        .addUserOption(o => o.setName('clan').setDescription('�lan suda koji dobija otkaz').setRequired(true))
+        .setDescription('Daje otkaz i izbacuje člana sa servera')
+        .addUserOption(o => o.setName('clan').setDescription('Član koji dobija otkaz').setRequired(true))
         .addStringOption(o => o.setName('razlog').setDescription('Razlog otkaza').setRequired(true)),
 
     async execute(interaction) {
         const hasRole = interaction.member.roles.cache.some(role =>
-            ['director', 'zamenik nacelnika', 'predsednik suda', 'zamenik predsednika', 'sudija'].includes(role.name.toLowerCase())
+            config.ALLOWED_ROLES.includes(role.name.toLowerCase())
         );
         const isAdmin = interaction.member.permissions.has(PermissionFlagsBits.Administrator);
 
         if (!hasRole && !isAdmin) {
-            return interaction.reply({ content: '❌ Nemate dozvolu! Ovu komandu mogu koristiti samo Uprava Suda.', ephemeral: true });
+            return interaction.reply({ content: '❌ Nemate dozvolu! Ovu komandu mogu koristiti samo članovi uprave.', ephemeral: true });
         }
 
         const targetUser = interaction.options.getUser('clan');
@@ -68,6 +65,3 @@ module.exports = {
         return interaction.reply({ embeds: [confirmEmbed], components: [row], ephemeral: true });
     }
 };
-
-
-

@@ -1,17 +1,18 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const config = require('../utils/config');
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('komande')
-        .setDescription('Prikazuje kompletno uputstvo za korišćenje SUD Bota'),
+        .setDescription(`Prikazuje kompletno uputstvo za korišćenje ${config.ORG_SHORT} Bota`),
     async execute(interaction) {
         const embeds = [];
 
         // --- EMBED 1: Uvod + Setup komande ---
         const embed1 = new EmbedBuilder()
             .setColor('#1a5276')
-            .setTitle('📘 SUD Support System — User Manual')
-            .setDescription('Kompletno uputstvo za korišćenje SUD Discord Bota.\nBot radi **24/7** na cloud serveru. Svi podaci se čuvaju u Firebase bazi.')
+            .setTitle(`📘 ${config.ORG_NAME} Support System — User Manual`)
+            .setDescription(`Kompletno uputstvo za korišćenje ${config.ORG_NAME} Discord Bota.\nBot radi **24/7** na cloud serveru. Svi podaci se čuvaju u Firebase bazi.`)
             .addFields(
                 {
                     name: '⚙️ Setup Komande (Samo za Admine — koriste se JEDNOM)',
@@ -45,7 +46,7 @@ module.exports = {
                     value: [
                         '1. Klikni dugme **🪪 Kreiraj Ličnu Kartu**.',
                         '2. Popuni formu: Ime i Prezime, UUID, Steam ime.',
-                        '3. Bot kreira embed ličnu kartu i dodeljuje ti rolu **�lan suda**.',
+                        `3. Bot kreira embed ličnu kartu i dodeljuje ti rolu **${config.MEMBER_ROLE}**.`,
                         '',
                         'Panel se automatski premešta na dno kanala.',
                     ].join('\n')
@@ -59,14 +60,14 @@ module.exports = {
             .setTitle('🏅 Značke & ✅ Plus / ⚠️ Minus / 🛑 Otkaz')
             .addFields(
                 {
-                    name: '🏅 Značke (Samo Uprava Suda)',
+                    name: '🏅 Značke (Samo za Upravu)',
                     value: [
                         '`/znacka @korisnik` — Dodeljuje sledeći slobodan broj značke.',
                         '`/izmeni-znacku @korisnik [broj]` — Ručno menja broj značke.',
                     ].join('\n')
                 },
                 {
-                    name: '✅⚠️🛑 Disciplinski Sistem (Samo Uprava Suda)',
+                    name: '✅⚠️🛑 Disciplinski Sistem (Samo za Upravu)',
                     value: [
                         '`/plus @korisnik [razlog]` — Pohvala članu.',
                         '`/minus @korisnik [razlog]` — Opomena članu.',
@@ -84,7 +85,7 @@ module.exports = {
             .setTitle('📊 Izveštaj & 🎫 Tiketi & 📄 Odsustvo')
             .addFields(
                 {
-                    name: '📊 Nedeljni Izveštaj (Samo Uprava Suda)',
+                    name: '📊 Nedeljni Izveštaj (Samo za Upravu)',
                     value: [
                         '`/izvestaj` — Generiše pregled aktivnosti cele ekipe za 7 dana.',
                         '🏆 Najaktivniji | ⚠️ Najmanje aktivni | 👻 Neaktivni',
@@ -97,7 +98,7 @@ module.exports = {
                 },
                 {
                     name: '🎫 Tiketi',
-                    value: 'Klikni **📩 Otvori Tiket** — Bot kreira privatni kanal za komunikaciju sa Uprava Sudama.'
+                    value: `Klikni **📩 Otvori Tiket** — Bot kreira privatni kanal za komunikaciju sa Upravom.`
                 },
                 {
                     name: '📄 Odsustvo',
@@ -106,13 +107,13 @@ module.exports = {
                 {
                     name: '🔐 Ko šta može',
                     value: [
-                        '**Svi članovi:** Dužnost, Lična karta, Tiketi, Odsustvo',
-                        '**Uprava Suda (Director/Zamenik):** Značke, Plus/Minus/Otkaz, Izveštaj',
+                        `**Svi članovi:** Dužnost, Lična karta, Tiketi, Odsustvo`,
+                        `**Uprava:** Značke, Plus/Minus/Otkaz, Izveštaj`,
                         '**Administratori:** Setup komande + sve ostalo',
                     ].join('\n')
                 }
             )
-            .setFooter({ text: 'Stranica 4/4 — SUD Support System v2.0' })
+            .setFooter({ text: `Stranica 4/4 — ${config.ORG_NAME} Support System` })
             .setTimestamp();
 
         embeds.push(embed1, embed2, embed3, embed4);
@@ -120,5 +121,3 @@ module.exports = {
         await interaction.reply({ embeds: embeds, ephemeral: true });
     },
 };
-
-

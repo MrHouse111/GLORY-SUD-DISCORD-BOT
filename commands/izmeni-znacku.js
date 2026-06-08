@@ -2,6 +2,7 @@ const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } = require('disc
 const fs = require('fs');
 const path = require('path');
 const { updateLeaderboard } = require('../utils/badgeLeaderboard');
+const config = require('../utils/config');
 
 const badgesFile = path.join(__dirname, '../badges.json');
 
@@ -23,11 +24,11 @@ module.exports = {
         .addUserOption(option => option.setName('clan').setDescription('član kome se menja značka').setRequired(true))
         .addIntegerOption(option => option.setName('broj').setDescription('Novi broj značke').setRequired(true)),
     async execute(interaction) {
-        const hasRole = interaction.member.roles.cache.some(role => ['director', 'zamenik nacelnika', 'Predsednik Suda', 'nacelnik', 'predsednik suda', 'zamenik predsednika', 'sudija'].includes(role.name.toLowerCase()));
+        const hasRole = interaction.member.roles.cache.some(role => config.ALLOWED_ROLES.includes(role.name.toLowerCase()));
         const isAdmin = interaction.member.permissions.has(PermissionFlagsBits.Administrator);
         
         if (!hasRole && !isAdmin) {
-            return interaction.reply({ content: '❌ Samo Uprava Suda mogu upravljati značkama!', ephemeral: true });
+            return interaction.reply({ content: '❌ Samo uprava može upravljati značkama!', ephemeral: true });
         }
 
         const badges = loadBadges();
@@ -68,7 +69,7 @@ module.exports = {
         try {
             const dmEmbed = new EmbedBuilder()
                 .setColor('#FFD700')
-                .setTitle('👮 SUD — Značka Ažurirana')
+                .setTitle(`👮 ${config.ORG_NAME} — Značka Ažurirana`)
                 .setDescription(`Dodeljen vam je novi broj značke i ormarića!\n\n🪪 **Vaš novi broj značke:** \`#${newBadge}\`\n🗄️ **Vaš novi ormarić:** \`${newBadge}\`\n\n*Molimo vas da uvek koristite ovaj broj na dužnosti.*`)
                 .setTimestamp();
             await targetUser.send({ embeds: [dmEmbed] });
@@ -79,7 +80,7 @@ module.exports = {
         const embed = new EmbedBuilder()
             .setColor('#FFD700')
             .setTitle('⭐ Značka Izmenjena')
-            .setDescription(`članu <@${targetUser.id}> je uspešno promenjen broj značke!`)
+            .setDescription(`Članu <@${targetUser.id}> je uspešno promenjen broj značke!`)
             .addFields(
                 { name: 'Novi broj', value: `**${newBadge}**`, inline: true },
                 { name: 'Stari broj', value: oldBadge ? `${oldBadge}` : 'Nije imao', inline: true }
@@ -89,5 +90,3 @@ module.exports = {
         return interaction.reply({ embeds: [embed] });
     },
 };
-
-
